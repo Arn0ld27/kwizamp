@@ -8,8 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = 3000;
-
+const PORT = process.env.PORT || 3000;
 // ---------- LOAD QUESTIONS ----------
 const questionsData = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'questions.json'), 'utf-8')
