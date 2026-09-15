@@ -1,0 +1,29 @@
+{
+  "questions": [
+    {
+      "question": "Which planet is known as the Red Planet?",
+      "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "correct": 1
+    },
+    {
+      "question": "What is the largest mammal on Earth?",
+      "options": ["African Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+      "correct": 1
+    },
+    {
+      "question": "Who painted the Mona Lisa?",
+      "options": ["Van Gogh", "Picasso", "Leonardo da Vinci", "Michelangelo"],
+      "correct": 2
+    },
+    {
+      "question": "What is the capital of Japan?",
+      "options": ["Seoul", "Beijing", "Bangkok", "Tokyo"],
+      "correct": 3
+    },
+    {
+      "question": "Which element has the chemical symbol 'O'?",
+      "options": ["Gold", "Oxygen", "Osmium", "Oganesson"],
+      "correct": 1
+    }
+  ]
+}

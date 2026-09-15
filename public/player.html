@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Player · KwizKamp</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="player-wrapper" id="playerApp">
+
+    <div class="player-header" id="playerHeader">
+      <div class="player-name" id="playerName">—</div>
+      <div class="player-header-right">
+        <span class="timer-pill" id="timerPill">⏱ --</span>
+        <span class="score-mini" id="playerScore">0</span>
+      </div>
+    </div>
+
+    <!-- CONNECTION LOST OVERLAY -->
+    <div id="connLost" class="conn-lost hidden">
+      <div class="conn-icon">🔌</div>
+      <div class="conn-text">Reconnecting...</div>
+      <div class="conn-sub">Please wait</div>
+    </div>
+
+    <!-- WAITING -->
+    <div id="viewWaiting" class="view">
+      <div class="waiting-icon">⏳</div>
+      <h2>Waiting for host...</h2>
+      <p class="waiting-sub">The quiz will start soon</p>
+      <div class="pulse-dot"></div>
+    </div>
+
+    <!-- QUESTION -->
+    <div id="viewQuestion" class="view hidden">
+      <div class="question-on-phone" id="questionOnPhone"></div>
+      <div class="player-options" id="playerOptions"></div>
+      <div class="hint-text hidden" id="hintText">👀 Look at the screen →</div>
+    </div>
+
+    <!-- RESULT (full-screen green/red) -->
+    <div id="viewResult" class="view result-fullscreen hidden">
+      <div class="result-icon-big" id="resultIcon">✅</div>
+      <div class="result-title-big" id="resultTitle">CORRECT!</div>
+      <div class="result-detail-big" id="resultDetail"></div>
+      <div class="result-score-big" id="resultScore"></div>
+      <div class="result-rank-big" id="resultRank"></div>
+    </div>
+
+    <!-- FINAL -->
+    <div id="viewFinal" class="view hidden">
+      <div class="result-icon">🏁</div>
+      <div class="result-title">Finished!</div>
+      <div class="result-score" id="finalScore">0</div>
+      <div class="result-rank" id="finalRank"></div>
+      <p class="waiting-sub" style="margin-top:1rem;">Waiting for host to show results...</p>
+    </div>
+
+    <!-- EMOJI REACTION BAR -->
+    <div class="reaction-bar" id="reactionBar">
+      <button class="reaction-btn" data-emoji="👍">👍</button>
+      <button class="reaction-btn" data-emoji="❤️">❤️</button>
+      <button class="reaction-btn" data-emoji="😂">😂</button>
+      <button class="reaction-btn" data-emoji="🎉">🎉</button>
+      <button class="reaction-btn" data-emoji="🔥">🔥</button>
+      <button class="reaction-btn" data-emoji="😮">😮</button>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/player.js"></script>
+</body>
+</html>

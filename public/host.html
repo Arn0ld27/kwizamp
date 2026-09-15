@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Host · KwizKamp</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="host-wrapper">
+
+    <div class="host-header">
+      <div class="logo-badge">
+        <span>🎓</span>
+        <h1>HOST</h1>
+      </div>
+      <div class="host-header-right">
+        <button class="toggle-btn" id="toggleQBtn" title="Show/hide question on player phones">👁 Q on 📱: ON</button>
+        <div class="host-status" id="hostStatus">Lobby</div>
+        <div class="host-timer" id="hostTimer"></div>
+      </div>
+    </div>
+
+    <div id="viewLobby" class="host-view">
+      <h2 class="lobby-title">Waiting for players...</h2>
+      <div class="lobby-count"><span id="lobbyCount">0</span> joined</div>
+      <div class="lobby-players" id="lobbyPlayers"></div>
+      <div class="lobby-url">
+        📱 Players: <strong id="playerUrl">http://localhost:3000</strong>
+      </div>
+      <button class="next-btn host-btn" id="startBtn" disabled>▶ START QUIZ</button>
+    </div>
+
+    <div id="viewQuestion" class="host-view hidden">
+      <div class="host-q-number" id="hostQNumber">Q 1 / 5</div>
+      <div class="host-question-text" id="hostQuestion">—</div>
+      <div class="host-options" id="hostOptions"></div>
+      <div class="host-progress">
+        <div class="progress-info">📥 Answered: <span id="answeredCount">0</span> / <span id="totalPlayers">0</span></div>
+        <div class="progress-container"><div class="progress-bar" id="hostProgressBar"></div></div>
+      </div>
+      <button class="next-btn host-btn" id="revealBtn">🔓 REVEAL ANSWER</button>
+    </div>
+
+    <div id="viewReveal" class="host-view hidden">
+      <div class="host-q-number" id="revealQNumber">Q 1 / 5</div>
+      <div class="host-question-text" id="revealQuestion">—</div>
+      <div class="host-options" id="revealOptions"></div>
+      <div class="correct-answer" id="correctAnswer">✅ Correct: —</div>
+      <button class="next-btn host-btn" id="nextBtn">➡ NEXT QUESTION</button>
+    </div>
+
+    <div id="viewEnd" class="host-view hidden">
+      <h2 class="end-title">🏆 QUIZ ENDED</h2>
+      <p class="waiting-sub" style="text-align:center; margin-bottom:1.5rem;">Click "Show Results" to display ranking on screen</p>
+      <div class="action-row">
+        <button class="next-btn host-btn" id="showResultsBtn">🏆 SHOW RESULTS</button>
+        <button class="next-btn host-btn download-btn" id="downloadBtn">💾 DOWNLOAD CSV</button>
+      </div>
+      <button class="next-btn host-btn" id="newGameBtn" style="margin-top:1rem;">🔄 NEW GAME</button>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/host.js"></script>
+</body>
+</html>
