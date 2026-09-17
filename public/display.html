@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Display · KwizKamp</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body class="display-body">
+  <div class="embers" id="embers"></div>
+  <div class="display-wrapper">
+
+    <!-- REACTION LAYER (floating emojis) -->
+    <div id="reactionLayer" class="reaction-layer"></div>
+
+    <!-- IDLE -->
+    <div id="viewIdle" class="display-view">
+      <div class="logo-badge display-logo">
+        <span>⚡</span>
+        <h1>KwizKamp</h1>
+      </div>
+      <p class="display-idle-text">Waiting for the host to start the quiz...</p>
+    </div>
+
+    <!-- GET READY -->
+    <div id="viewGetReady" class="display-view hidden">
+      <div class="display-idle-text">Question <span id="grQNum">1</span> of <span id="grTotal">5</span></div>
+      <div class="get-ready-num" id="grCount">3</div>
+      <div class="display-idle-text">Get ready...</div>
+    </div>
+
+    <!-- QUESTION -->
+    <div id="viewQuestion" class="display-view hidden">
+      <div class="display-top">
+        <span id="displayQNum">Q 1 / 5</span>
+        <span class="display-timer" id="displayTimer">⏱ 20s</span>
+      </div>
+      <div class="display-question-text" id="displayQuestion">—</div>
+    </div>
+
+    <!-- REVEAL -->
+    <div id="viewReveal" class="display-view hidden">
+      <div class="display-top">
+        <span id="displayQNum2">Q 1 / 5</span>
+      </div>
+      <div class="display-question-text" id="displayQuestion2">—</div>
+      <div class="display-correct" id="displayCorrect">✅ —</div>
+      <div class="display-counts" id="displayCounts"></div>
+    </div>
+
+    <!-- RANKING -->
+    <div id="viewRanking" class="display-view hidden">
+      <h1 class="ranking-title">🏆 Final Ranking</h1>
+      <div class="ranking-chart" id="rankingChart"></div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/display.js"></script>
+</body>
+</html>

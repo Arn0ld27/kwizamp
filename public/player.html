@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Join · KwizKamp</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body class="player-body">
+  <div class="embers" id="embers"></div>
+
+  <!-- JOIN -->
+  <div id="viewJoin" class="player-view">
+    <div class="display-logo"><span style="font-size:2.2rem;">⚡</span><h1 style="font-size:2rem;color:var(--glow);">KwizKamp</h1></div>
+    <form class="join-form" id="joinForm">
+      <input type="text" id="nameInput" placeholder="Your name" maxlength="20" autocomplete="off" required />
+      <div class="avatar-grid" id="avatarGrid"></div>
+      <button type="submit" class="btn btn-primary">Join the kamp</button>
+    </form>
+  </div>
+
+  <!-- WAITING -->
+  <div id="viewWaiting" class="player-view hidden">
+    <div style="font-size:2.4rem;">🔥</div>
+    <h2 style="font-size:1.4rem;">You're in, <span id="waitingName">Camper</span>!</h2>
+    <p style="color:var(--text-muted);">Watch the big screen — the quiz starts soon.</p>
+  </div>
+
+  <!-- GET READY -->
+  <div id="viewGetReadyP" class="player-view hidden">
+    <p style="color:var(--text-muted);">Question <span id="pGrNum">1</span> of <span id="pGrTotal">5</span></p>
+    <div class="get-ready-num" style="font-size:5rem;" id="pGrCount">3</div>
+    <p style="color:var(--text-muted);">Get ready...</p>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="viewQuestionP" class="player-view hidden">
+    <div class="player-timer-ring" id="timerRing"><span id="timerNum">20</span></div>
+    <div class="player-qnum" id="pQNum">Q 1 / 5</div>
+    <div class="player-question-text" id="pQuestionText">—</div>
+    <div class="option-grid" id="optionGrid"></div>
+    <form class="ident-form hidden" id="identForm">
+      <input type="text" id="identInput" placeholder="Type your answer" maxlength="120" autocomplete="off" />
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <!-- RESULT -->
+  <div id="viewResult" class="player-view hidden">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-title" id="resultTitle">Correct!</div>
+    <div class="points-earned" id="pointsEarned">+0</div>
+    <div class="ident-result hidden" id="identResult">
+      <p>Your answer: <strong id="identYourAnswer">—</strong></p>
+      <p>Correct answer: <strong id="identCorrectAnswer">—</strong></p>
+    </div>
+    <div class="streak-chip hidden" id="streakChip">🔥 streak</div>
+    <div class="pill">Rank #<span id="resultRank">-</span> · <span id="resultScore">0</span> pts</div>
+  </div>
+
+  <!-- FINAL -->
+  <div id="viewFinal" class="player-view hidden">
+    <p style="color:var(--text-muted);">Final rank</p>
+    <div class="final-rank" id="finalRank">-</div>
+    <p class="final-rank-label"><span id="finalScore">0</span> points — thanks for playing!</p>
+  </div>
+
+  <div class="reaction-bar hidden" id="reactionBar">
+    <button class="reaction-btn" data-emoji="👍">👍</button>
+    <button class="reaction-btn" data-emoji="❤️">❤️</button>
+    <button class="reaction-btn" data-emoji="😂">😂</button>
+    <button class="reaction-btn" data-emoji="🎉">🎉</button>
+    <button class="reaction-btn" data-emoji="🔥">🔥</button>
+    <button class="reaction-btn" data-emoji="😮">😮</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/player.js"></script>
+</body>
+</html>
