@@ -3,53 +3,45 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Join Quiz · KwizKamp</title>
+<title>KwizKamp</title>
 <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="quiz-wrapper landing-wrapper">
-    <div class="logo-badge landing-logo">
-      <span>⚡</span>
-      <h1>KwizKamp</h1>
+  <div class="embers" id="embers"></div>
+  <div class="landing">
+    <div class="logo-mark">⚡</div>
+    <h1>KwizKamp</h1>
+    <p class="tagline">A live quiz for your room. No accounts, no cloud — just a laptop, some phones, and a screen.</p>
+
+    <div class="role-grid">
+      <a class="role-card panel" href="/host">
+        <span class="icon">🎓</span>
+        <span class="name">Host</span>
+        <span class="desc">Run the game from here</span>
+      </a>
+      <a class="role-card panel" href="/display">
+        <span class="icon">🖥️</span>
+        <span class="name">Display</span>
+        <span class="desc">Put this on the big screen</span>
+      </a>
+      <a class="role-card panel" href="/play">
+        <span class="icon">📱</span>
+        <span class="name">Join</span>
+        <span class="desc">Players open this on their phone</span>
+      </a>
     </div>
-    <p class="landing-sub">Enter your name and pick an avatar</p>
-    <form id="joinForm" class="join-form">
-      <input type="text" id="nameInput" placeholder="Your name" maxlength="20" autocomplete="off" required />
-
-      <div class="avatar-picker-label">Pick your avatar:</div>
-      <div class="avatar-picker" id="avatarPicker"></div>
-
-      <button type="submit" class="next-btn landing-btn">JOIN →</button>
-    </form>
-   <!-- <p class="landing-hint">Host? <a href="/host">Host panel</a> · <a href="/display">Display</a></p>-->
   </div>
 
   <script>
-    const AVATARS = ['🐶','🐱','🦊','🐼','🐸','🦁','🐯','🐨','🐵','🦄','👾','🤖','👽','🎃','👻','🦖','🐲','🦅','🐢','🦋'];
-    let selectedAvatar = AVATARS[0];
-
-    const picker = document.getElementById('avatarPicker');
-    AVATARS.forEach((a, i) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'avatar-option' + (i === 0 ? ' selected' : '');
-      btn.textContent = a;
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedAvatar = a;
-      });
-      picker.appendChild(btn);
-    });
-
-    document.getElementById('joinForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('nameInput').value.trim();
-      if (!name) return;
-      sessionStorage.setItem('playerName', name);
-      sessionStorage.setItem('playerAvatar', selectedAvatar);
-      window.location.href = '/play';
-    });
+    const layer = document.getElementById('embers');
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('span');
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+      s.style.animationDuration = (6 + Math.random() * 8) + 's';
+      s.style.animationDelay = (Math.random() * 8) + 's';
+      layer.appendChild(s);
+    }
   </script>
 </body>
 </html>
