@@ -6,17 +6,14 @@
 <title>KwizKamp</title>
 <link rel="stylesheet" href="/style.css" />
 <style>
-  /* ---------- LANDING — page-scoped enhancements only ----------
-     These styles ADD to the existing /style.css.
-     Nothing here changes structure, class names, or behavior.
-     Kept visually consistent with the display/host/player theme. */
+  /* ---------- LANDING — page-scoped enhancements only ---------- */
 
   .landing {
     position: relative;
     z-index: 2;
   }
 
-  /* Soft aurora orbs behind the landing (matches other views) */
+  /* Soft aurora orbs behind the landing */
   .landing::before,
   .landing::after {
     content: '';
@@ -52,7 +49,7 @@
     100% { transform: translate(-8vw, -6vh) scale(0.9); }
   }
 
-  /* Live badge above the logo */
+  /* Live badge */
   .landing .live-badge {
     display: inline-flex;
     align-items: center;
@@ -85,7 +82,7 @@
     100% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0); }
   }
 
-  /* Logo mark — soft glow halo */
+  /* Logo mark */
   .landing .logo-mark {
     position: relative;
     font-size: 3.6rem;
@@ -98,37 +95,51 @@
     50%      { transform: translateY(-6px); }
   }
 
-  /* Tagline — subtle divider line below */
+  /* Tagline divider */
   .landing p.tagline {
     position: relative;
     z-index: 1;
     padding-bottom: 1.2rem;
     border-bottom: 1px dashed rgba(255, 159, 67, 0.25);
-    margin-bottom: 32px !important;
+    margin-bottom: 36px !important;
   }
 
-  /* Role grid — keep original grid behavior, just polish spacing */
+  /* ---------- ROLE GRID — now holds only the single Join card ---------- */
   .landing .role-grid {
     position: relative;
     z-index: 1;
-    gap: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    grid-template-columns: none; /* neutralize any grid rules from style.css */
   }
 
-  /* Role cards — upgraded surface + hover, same class names */
+  /* ---------- JOIN CARD — hero-style, centered ---------- */
   .landing .role-card {
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+    padding: 40px 32px;
+    width: 100%;
     background: linear-gradient(180deg, var(--bg-panel-2) 0%, var(--bg-panel) 100%);
-    border: 1px solid var(--line);
+    border: 1px solid rgba(255, 159, 67, 0.35);
     border-radius: var(--radius-lg);
-    padding: 30px 18px 26px;
-    box-shadow: var(--shadow-panel);
+    box-shadow:
+      0 22px 45px -15px rgba(255, 140, 0, 0.35),
+      var(--shadow-panel);
     transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                 border-color 0.25s ease,
                 box-shadow 0.3s ease;
   }
 
-  /* Top glow strip inside each card */
   .landing .role-card::before {
     content: '';
     position: absolute;
@@ -138,16 +149,14 @@
     width: 70%;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--ember), transparent);
-    opacity: 0.55;
-    transition: opacity 0.3s ease;
+    opacity: 0.7;
   }
 
-  /* Radial hover glow */
   .landing .role-card::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 159, 67, 0.18), transparent 65%);
+    background: radial-gradient(circle at 50% 0%, rgba(255, 159, 67, 0.22), transparent 65%);
     opacity: 0;
     transition: opacity 0.4s ease;
     pointer-events: none;
@@ -155,29 +164,29 @@
   .landing .role-card:hover::after { opacity: 1; }
 
   .landing .role-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255, 159, 67, 0.7);
+    transform: translateY(-6px) scale(1.015);
+    border-color: rgba(255, 190, 80, 0.85);
     box-shadow:
-      0 22px 45px -12px rgba(255, 140, 0, 0.35),
+      0 28px 55px -15px rgba(255, 140, 0, 0.55),
       var(--shadow-panel);
   }
 
   .landing .role-card .icon {
     position: relative;
     z-index: 1;
-    font-size: 2.4rem;
-    filter: drop-shadow(0 0 10px rgba(255, 159, 67, 0.35));
+    font-size: 2.8rem;
+    filter: drop-shadow(0 0 14px rgba(255, 159, 67, 0.5));
     transition: transform 0.35s ease;
   }
   .landing .role-card:hover .icon {
-    transform: scale(1.08) translateY(-2px);
+    transform: scale(1.1) translateY(-2px);
   }
 
   .landing .role-card .name {
     position: relative;
     z-index: 1;
-    font-size: 1.3rem;
-    letter-spacing: 0.4px;
+    font-size: 2rem;
+    letter-spacing: 0.5px;
     background: linear-gradient(180deg, var(--glow), var(--ember));
     -webkit-background-clip: text;
     background-clip: text;
@@ -187,12 +196,12 @@
   .landing .role-card .desc {
     position: relative;
     z-index: 1;
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     line-height: 1.5;
     color: var(--text-muted);
   }
 
-  /* Footer note under the grid */
+  /* Footer note */
   .landing .footer-note {
     position: relative;
     z-index: 1;
@@ -205,8 +214,8 @@
 
   @media (max-width: 620px) {
     .landing::before, .landing::after { filter: blur(80px); }
-    .landing .role-grid { gap: 14px; }
-    .landing .role-card { padding: 26px 16px 22px; }
+    .landing .role-card { padding: 34px 24px; }
+    .landing .role-card .name { font-size: 1.7rem; }
   }
 </style>
 </head>
@@ -214,7 +223,6 @@
   <div class="embers" id="embers"></div>
   <div class="landing">
 
-    <!-- NEW: small live badge — purely decorative, no behavior -->
     <div class="live-badge" aria-hidden="true">
       <span class="live-dot"></span>
       Live quiz
@@ -224,28 +232,16 @@
     <h1>KwizKamp</h1>
     <p class="tagline">A live quiz for your room. No accounts, no cloud — just a laptop, some phones, and a screen.</p>
 
-    <!-- Same structure and classes as before — nothing functional changed -->
+    <!-- Only the Join card remains. Host & Display removed from the landing. -->
     <div class="role-grid">
-      <!--<a class="role-card panel" href="/host">
-        <span class="icon">🎓</span>
-        <span class="name">Host</span>
-        <span class="desc">Run the game from here</span>
-      </a>
-      <a class="role-card panel" href="/display">
-        <span class="icon">🖥️</span>
-        <span class="name">Display</span>
-        <span class="desc">Put this on the big screen</span>
-      </a>
-    </div>-->
       <a class="role-card panel" href="/play">
-
+        <span class="icon">📱</span>
         <span class="name">Join</span>
-        <span class="desc">Players open this on their phone</span>
+        <span class="desc">Tap to enter the game</span>
       </a>
     </div>
 
-    <!-- NEW: small footer caption — decorative only -->
-    <p class="footer-note">Tap a role to begin</p>
+    <p class="footer-note">Ask the host for the room code</p>
   </div>
 
   <script>
