@@ -1,181 +1,162 @@
 const socket = io();
-socket.emit('host-join');
 
-const views = {
-  lobby: document.getElementById('viewLobby'),
-  question: document.getElementById('viewQuestion'),
-  reveal: document.getElementById('viewReveal'),
-  end: document.getElementById('viewEnd')
+document.getElementById('playUrl').textContent = `${location.origin}/play`;
+
+const stages = {
+  lobby: document.getElementById('stageLobby'),
+  getReady: document.getElementById('stageGetReady'),
+  question: document.getElementById('stageQuestion'),
+  reveal: document.getElementById('stageReveal'),
+  ended: document.getElementById('stageEnded')
 };
-
-const hostStatus = document.getElementById('hostStatus');
-const hostTimer = document.getElementById('hostTimer');
-let currentQuestion = null;
-let timerInterval = null;
-let showQuestionOnPhone = true;
-let latestLeaderboard = [];
-
-function showView(v) {
-  Object.values(views).forEach(el => el.classList.add('hidden'));
-  views[v].classList.remove('hidden');
-  hostStatus.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+function showStage(name) {
+  Object.values(stages).forEach(s => s.classList.add('hidden'));
+  stages[name].classList.remove('hidden');
 }
 
-document.getElementById('playerUrl').textContent = `${location.origin}/play`;
+const statusPill = document.getElementById('statusPill');
+const startBtn = document.getElementById('startBtn');
+const rosterList = document.getElementById('rosterList');
+const rosterCount = document.getElementById('rosterCount');
+const leaderboardMini = document.getElementById('leaderboardMini');
+const progressFill = document.getElementById('progressFill');
 
-document.getElementById('toggleQBtn').addEventListener('click', () => {
-  showQuestionOnPhone = !showQuestionOnPhone;
-  socket.emit('toggle-question-on-phone', showQuestionOnPhone);
-  updateToggleBtn();
+let totalQuestions = 0;
+
+socket.on('connect', () => socket.emit('host-join'));
+
+socket.on('state', (state) => {
+  totalQuestions = state.total;
+  renderRoster(state.players);
+  document.getElementById('phoneToggle').checked = state.showQuestionOnPhone;
+  document.getElementById('durationSlider').value = state.questionDuration;
+  document.getElementById('durationLabel').textContent = state.questionDuration + 's';
+
+  if (state.status === 'lobby') {
+    statusPill.textContent = 'Lobby';
+    showStage('lobby');
+    progressFill.style.width = '0%';
+  } else if (state.status === 'ended') {
+    statusPill.textContent = 'Finished';
+    showStage('ended');
+    progressFill.style.width = '100%';
+  }
 });
 
-function updateToggleBtn() {
-  const btn = document.getElementById('toggleQBtn');
-  btn.textContent = `👁 Q on 📱: ${showQuestionOnPhone ? 'ON' : 'OFF'}`;
-  btn.classList.toggle('off', !showQuestionOnPhone);
-}
-
-socket.on('state', (s) => {
-  showQuestionOnPhone = s.showQuestionOnPhone !== false;
-  updateToggleBtn();
-  if (s.status === 'lobby') showView('lobby');
-});
-
-socket.on('toggle-updated', (val) => {
-  showQuestionOnPhone = val;
-  updateToggleBtn();
-});
-
-socket.on('player-list', (players) => {
-  document.getElementById('lobbyCount').textContent = players.length;
-  const c = document.getElementById('lobbyPlayers');
-  c.innerHTML = '';
+function renderRoster(players) {
+  rosterCount.textContent = players.length;
+  startBtn.disabled = players.length === 0;
+  rosterList.innerHTML = '';
   players.forEach(p => {
-    const chip = document.createElement('div');
-    chip.className = 'player-chip';
-    const statusIcon = p.status === 'online' ? '🟢' : '🔴';
-    chip.textContent = `${statusIcon} ${p.avatar || '🐶'} ${p.name}`;
-    c.appendChild(chip);
+    const row = document.createElement('div');
+    row.className = 'roster-item' + (p.status === 'offline' ? ' offline' : '');
+    row.innerHTML = `
+      <span class="badge-avatar" style="width:30px;height:30px;font-size:1rem;">${p.avatar}</span>
+      <span class="r-name">${p.name}</span>
+      <span class="r-status"></span>
+      <button class="kick-btn" title="Remove player">✕</button>
+    `;
+    row.querySelector('.kick-btn').addEventListener('click', () => {
+      if (confirm(`Remove ${p.name} from the game?`)) {
+        socket.emit('kick-player', p.id);
+      }
+    });
+    rosterList.appendChild(row);
   });
-  document.getElementById('startBtn').disabled = players.length === 0;
+}
+socket.on('player-list', renderRoster);
+
+function renderLeaderboard(leaderboard) {
+  leaderboardMini.innerHTML = '';
+  leaderboard.slice(0, 12).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    row.innerHTML = `
+      <span>#${i + 1}</span>
+      <span>${p.avatar}</span>
+      <span class="lb-name">${p.name}</span>
+      <span class="lb-score">${p.score}</span>
+    `;
+    leaderboardMini.appendChild(row);
+  });
+}
+
+// ---------- LOBBY CONTROLS ----------
+document.getElementById('durationSlider').addEventListener('input', (e) => {
+  document.getElementById('durationLabel').textContent = e.target.value + 's';
+});
+document.getElementById('durationSlider').addEventListener('change', (e) => {
+  socket.emit('set-duration', Number(e.target.value));
+});
+socket.on('duration-updated', (val) => {
+  document.getElementById('durationLabel').textContent = val + 's';
 });
 
-document.getElementById('startBtn').addEventListener('click', () => socket.emit('start-quiz'));
+startBtn.addEventListener('click', () => socket.emit('start-quiz'));
+
+document.getElementById('phoneToggle').addEventListener('change', (e) => {
+  socket.emit('toggle-question-on-phone', e.target.checked);
+});
+
+// ---------- GET READY ----------
+socket.on('get-ready', (data) => {
+  statusPill.textContent = 'Get ready';
+  document.getElementById('grHostNum').textContent = data.index + 1;
+  document.getElementById('grHostTotal').textContent = data.total;
+  showStage('getReady');
+});
+
+// ---------- QUESTION ----------
+const KIND_LABELS = { mcq: 'Multiple choice', truefalse: 'True or False', identification: 'Identification' };
 
 socket.on('question-host', (data) => {
-  currentQuestion = data;
-  document.getElementById('hostQNumber').textContent = `Q ${data.index + 1} / ${data.total}`;
-  document.getElementById('hostQuestion').textContent = data.question;
-  document.getElementById('answeredCount').textContent = '0';
-  document.getElementById('totalPlayers').textContent = data.totalPlayers;
-  document.getElementById('hostProgressBar').style.width = '0%';
-
-  const opts = document.getElementById('hostOptions');
-  opts.innerHTML = '';
-  data.options.forEach((opt, idx) => {
-    const div = document.createElement('div');
-    div.className = 'host-option';
-    div.innerHTML = `${opt}<span class="count" id="hostCount-${idx}"></span>`;
-    opts.appendChild(div);
-  });
-
-  showView('question');
-  startTimer(data.duration, data.startedAt);
+  statusPill.textContent = 'Question live';
+  const kindLabel = KIND_LABELS[data.kind] || 'Multiple choice';
+  document.getElementById('qCounter').textContent = `Q ${data.index + 1} / ${data.total} · ${kindLabel}`;
+  document.getElementById('hostQuestionText').textContent = data.question;
+  document.getElementById('answerCount').textContent = `0 / ${data.totalPlayers} answered`;
+  progressFill.style.width = `${Math.round((data.index / data.total) * 100)}%`;
+  showStage('question');
 });
 
-socket.on('answer-count-update', ({ answered, total }) => {
-  document.getElementById('answeredCount').textContent = answered;
-  document.getElementById('totalPlayers').textContent = total;
-  const pct = total > 0 ? (answered / total) * 100 : 0;
-  document.getElementById('hostProgressBar').style.width = pct + '%';
+socket.on('answer-count-update', (data) => {
+  document.getElementById('answerCount').textContent = `${data.answered} / ${data.total} answered`;
+});
+
+socket.on('all-answered', () => {
+  document.getElementById('answerCount').textContent += ' — everyone\'s in!';
 });
 
 document.getElementById('revealBtn').addEventListener('click', () => socket.emit('reveal-answer'));
 
+// ---------- REVEAL ----------
 socket.on('reveal', (data) => {
-  stopTimer();
-
-  document.getElementById('revealQNumber').textContent = `Q ${currentQuestion.index + 1} / ${currentQuestion.total}`;
-  document.getElementById('revealQuestion').textContent = currentQuestion.question;
-
-  const opts = document.getElementById('revealOptions');
-  opts.innerHTML = '';
-  currentQuestion.options.forEach((opt, idx) => {
-    const div = document.createElement('div');
-    div.className = 'host-option';
-    if (idx === data.correctIndex) div.classList.add('correct');
-    div.innerHTML = `${opt}<span class="count">${data.counts[idx]}</span>`;
-    opts.appendChild(div);
-  });
-
-  document.getElementById('correctAnswer').textContent = `✅ Correct: ${currentQuestion.options[data.correctIndex]}`;
-
-  latestLeaderboard = data.leaderboard || [];
-  showView('reveal');
+  statusPill.textContent = 'Reveal';
+  document.getElementById('revealCorrectText').textContent = data.correctText;
+  renderLeaderboard(data.leaderboard);
+  showStage('reveal');
 });
 
 document.getElementById('nextBtn').addEventListener('click', () => socket.emit('next-question'));
 
+// ---------- ENDED ----------
 socket.on('game-ended', (data) => {
-  stopTimer();
-  latestLeaderboard = data.leaderboard || [];
-  showView('end');
+  statusPill.textContent = 'Finished';
+  renderLeaderboard(data.leaderboard);
+  progressFill.style.width = '100%';
+  showStage('ended');
 });
 
-document.getElementById('showResultsBtn').addEventListener('click', () => {
-  socket.emit('show-results');
-  document.getElementById('showResultsBtn').textContent = '✅ Results Shown';
-  document.getElementById('showResultsBtn').disabled = true;
-});
+document.getElementById('showResultsBtn').addEventListener('click', () => socket.emit('show-results'));
 
+// ---------- NEW GAME ----------
 document.getElementById('newGameBtn').addEventListener('click', () => {
-  socket.emit('new-game');
+  if (confirm('Start a brand new game? Everyone\'s score resets to 0.')) {
+    socket.emit('new-game');
+  }
 });
-
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  const lines = [];
-  lines.push('Quiz Results');
-  lines.push(`Date: ${new Date().toLocaleString()}`);
-  lines.push(`Total Players: ${latestLeaderboard.length}`);
-  lines.push('');
-  lines.push('Rank,Name,Score');
-  latestLeaderboard.forEach((p, i) => {
-    lines.push(`${i + 1},"${p.name.replace(/"/g, '""')}",${p.score}`);
-  });
-  const csv = lines.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-  a.href = url;
-  a.download = `quiz-results-${ts}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
 socket.on('reset', () => {
-  showView('lobby');
-  document.getElementById('lobbyPlayers').innerHTML = '';
-  document.getElementById('lobbyCount').textContent = '0';
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('showResultsBtn').disabled = false;
-  document.getElementById('showResultsBtn').textContent = '🏆 SHOW RESULTS';
-  hostTimer.textContent = '';
+  statusPill.textContent = 'Lobby';
+  progressFill.style.width = '0%';
+  showStage('lobby');
 });
-
-function startTimer(duration, startedAt) {
-  stopTimer();
-  const endTime = startedAt + duration * 1000;
-  const update = () => {
-    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-    hostTimer.textContent = `⏱ ${remaining}s`;
-    if (remaining <= 0) { hostTimer.textContent = `⏱ 0s`; stopTimer(); }
-  };
-  update();
-  timerInterval = setInterval(update, 250);
-}
-
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
-}
