@@ -1,131 +1,174 @@
 const socket = io();
-socket.emit('display-join');
 
 const views = {
   idle: document.getElementById('viewIdle'),
+  getReady: document.getElementById('viewGetReady'),
   question: document.getElementById('viewQuestion'),
   reveal: document.getElementById('viewReveal'),
   ranking: document.getElementById('viewRanking')
 };
 
-function showView(v) {
-  Object.values(views).forEach(el => el.classList.add('hidden'));
-  views[v].classList.remove('hidden');
+function showView(name) {
+  Object.values(views).forEach(v => v.classList.add('hidden'));
+  views[name].classList.remove('hidden');
 }
 
-let currentQ = null;
-let timerInterval = null;
+// ---------- Ambient embers ----------
+const emberLayer = document.getElementById('embers');
+for (let i = 0; i < 24; i++) {
+  const s = document.createElement('span');
+  s.style.left = Math.random() * 100 + 'vw';
+  s.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+  s.style.animationDuration = (6 + Math.random() * 10) + 's';
+  s.style.animationDelay = (Math.random() * 10) + 's';
+  emberLayer.appendChild(s);
+}
 
-socket.on('display-state', (s) => {
-  if (s.status === 'lobby') showView('idle');
+socket.on('connect', () => socket.emit('display-join'));
+
+socket.on('display-state', (state) => {
+  if (state.status === 'lobby') showView('idle');
 });
 
+// ---------- GET READY ----------
+let countdownInterval = null;
+socket.on('get-ready', (data) => {
+  clearInterval(countdownInterval);
+  document.getElementById('grQNum').textContent = data.index + 1;
+  document.getElementById('grTotal').textContent = data.total;
+  const el = document.getElementById('grCount');
+
+  const tick = () => {
+    const remaining = Math.max(0, Math.ceil((data.countdownMs) / 1000));
+    return remaining;
+  };
+
+  let msLeft = data.countdownMs;
+  el.textContent = Math.ceil(msLeft / 1000);
+  showView('getReady');
+
+  countdownInterval = setInterval(() => {
+    msLeft -= 1000;
+    if (msLeft <= 0) {
+      clearInterval(countdownInterval);
+      return;
+    }
+    el.textContent = Math.ceil(msLeft / 1000);
+  }, 1000);
+});
+
+// ---------- QUESTION ----------
+let timerInterval = null;
 socket.on('question-display', (data) => {
-  currentQ = data;
+  clearInterval(countdownInterval);
+  clearInterval(timerInterval);
+
   document.getElementById('displayQNum').textContent = `Q ${data.index + 1} / ${data.total}`;
   document.getElementById('displayQuestion').textContent = data.question;
   showView('question');
-  startTimer(data.duration, data.startedAt);
+
+  const timerEl = document.getElementById('displayTimer');
+
+  function tick() {
+    const elapsed = (Date.now() - data.startedAt) / 1000;
+    const remaining = Math.max(0, Math.ceil(data.duration - elapsed));
+    timerEl.textContent = `⏱ ${remaining}s`;
+    timerEl.classList.toggle('low', remaining <= 5);
+    if (remaining <= 0) clearInterval(timerInterval);
+  }
+  tick();
+  timerInterval = setInterval(tick, 250);
 });
 
+// ---------- REVEAL ----------
+const LETTERS = ['A', 'B', 'C', 'D'];
 socket.on('reveal-display', (data) => {
-  stopTimer();
-  document.getElementById('displayQNum2').textContent = `Q ${currentQ.index + 1} / ${currentQ.total}`;
-  document.getElementById('displayQuestion2').textContent = currentQ.question;
-  document.getElementById('displayCorrect').textContent = `✅ Correct: ${data.correctText}`;
+  clearInterval(timerInterval);
 
-  const letters = ['A', 'B', 'C', 'D'];
-  const countsHtml = data.options.map((opt, i) => {
-    return `<div class="count-item"><span class="count-letter">${letters[i]}</span><span class="count-opt">${opt}</span><span class="count-num">${data.counts[i]}</span></div>`;
-  }).join('');
-  document.getElementById('displayCounts').innerHTML = countsHtml;
+  document.getElementById('displayQNum2').textContent = document.getElementById('displayQNum').textContent;
+  document.getElementById('displayQuestion2').textContent = document.getElementById('displayQuestion').textContent;
+  document.getElementById('displayCorrect').textContent = `✅ ${data.correctText}`;
+
+  const countsEl = document.getElementById('displayCounts');
+  countsEl.innerHTML = '';
+
+  if (data.kind === 'identification') {
+    const total = Math.max(data.identStats.total, 1);
+    const pct = Math.round((data.identStats.correct / total) * 100);
+    const wrap = document.createElement('div');
+    wrap.className = 'ident-stat-bar';
+    wrap.innerHTML = `
+      <span class="stat-label">${data.identStats.correct} of ${data.identStats.total} campers got it right</span>
+      <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+      <span class="stat-num">${pct}%</span>
+    `;
+    countsEl.appendChild(wrap);
+    requestAnimationFrame(() => {
+      wrap.querySelector('.bar-fill').style.width = pct + '%';
+    });
+  } else {
+    const total = data.counts.reduce((a, b) => a + b, 0) || 1;
+    data.counts.forEach((c, i) => {
+      const pct = Math.round((c / total) * 100);
+      const div = document.createElement('div');
+      div.className = 'count-bar' + (i === data.correctIndex ? ' correct' : '');
+      div.innerHTML = `
+        <span class="letter">${LETTERS[i]}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+        <span class="num">${c}</span>
+      `;
+      countsEl.appendChild(div);
+      requestAnimationFrame(() => {
+        div.querySelector('.bar-fill').style.width = pct + '%';
+      });
+    });
+  }
 
   showView('reveal');
 });
 
-socket.on('game-ended-display', () => {
-  showView('idle');
-});
+// ---------- RANKING ----------
+function renderRanking(leaderboard) {
+  const el = document.getElementById('rankingChart');
+  el.innerHTML = '';
+  leaderboard.slice(0, 10).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'rank-row' + (i === 0 ? ' p1' : i === 1 ? ' p2' : i === 2 ? ' p3' : '');
+    row.style.animationDelay = (i * 0.08) + 's';
+    row.innerHTML = `
+      <span class="place">#${i + 1}</span>
+      <span class="r-avatar">${p.avatar}</span>
+      <span class="r-name">${p.name}</span>
+      <span class="r-score">${p.score}</span>
+    `;
+    el.appendChild(row);
+  });
+}
 
 socket.on('show-results-display', (data) => {
-  const chart = document.getElementById('rankingChart');
-  chart.innerHTML = '';
-
-  const lb = data.leaderboard.slice(0, 10);
-  const maxScore = Math.max(1, ...lb.map(p => p.score));
-
-  lb.forEach((p, i) => {
-    const row = document.createElement('div');
-    row.className = 'rank-row';
-    const pct = (p.score / maxScore) * 100;
-    row.innerHTML = `
-      <div class="rank-pos">#${i + 1}</div>
-      <div class="rank-name">${p.avatar || '🐶'} ${p.name}</div>
-      <div class="rank-bar-wrap">
-        <div class="rank-bar" style="width: ${pct}%"></div>
-      </div>
-      <div class="rank-score">${p.score}</div>
-    `;
-    chart.appendChild(row);
-  });
-
+  renderRanking(data.leaderboard);
   showView('ranking');
 });
 
+socket.on('game-ended-display', (data) => {
+  if (data && data.leaderboard) renderRanking(data.leaderboard);
+  showView('ranking');
+});
+
+// ---------- REACTIONS ----------
+const reactionLayer = document.getElementById('reactionLayer');
+socket.on('reaction', (data) => {
+  const el = document.createElement('div');
+  el.className = 'reaction-pop';
+  el.textContent = data.emoji;
+  el.style.left = (Math.random() * 80 + 10) + 'vw';
+  reactionLayer.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+});
+
+// ---------- RESET ----------
 socket.on('reset', () => {
-  stopTimer();
+  clearInterval(timerInterval);
+  clearInterval(countdownInterval);
   showView('idle');
 });
-
-// ---------- REACTION ANIMATION ----------
-socket.on('reaction', (data) => {
-  const layer = document.getElementById('reactionLayer');
-  const el = document.createElement('div');
-  el.className = 'floating-emoji';
-  el.textContent = data.emoji;
-
-  // Random horizontal position (10% - 90%)
-  const left = 10 + Math.random() * 80;
-  el.style.left = left + '%';
-
-  // Random size
-  const size = 3 + Math.random() * 2.5; // 3rem - 5.5rem
-  el.style.fontSize = size + 'rem';
-
-  // Random rotation
-  const rot = (Math.random() - 0.5) * 40;
-  el.style.setProperty('--rot', rot + 'deg');
-
-  layer.appendChild(el);
-
-  // Remove after animation (3s)
-  setTimeout(() => el.remove(), 3000);
-});
-
-// ---------- TIMER ----------
-function startTimer(duration, startedAt) {
-  stopTimer();
-  const el = document.getElementById('displayTimer');
-  const endTime = startedAt + duration * 1000;
-
-  const update = () => {
-    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-    el.textContent = `⏱ ${remaining}s`;
-    if (remaining <= 5 && remaining > 0) {
-      el.classList.add('timer-tense');
-    } else {
-      el.classList.remove('timer-tense');
-    }
-    if (remaining <= 0) {
-      el.textContent = `⏱ 0s`;
-      stopTimer();
-    }
-  };
-  update();
-  timerInterval = setInterval(update, 250);
-}
-
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
-}
