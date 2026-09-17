@@ -1,234 +1,258 @@
 const socket = io();
 
-let persistentId = sessionStorage.getItem('persistentId');
-if (!persistentId) {
-  persistentId = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-  sessionStorage.setItem('persistentId', persistentId);
-}
-
-const name = sessionStorage.getItem('playerName') || 'Anonymous';
-const avatar = sessionStorage.getItem('playerAvatar') || '🐶';
-document.getElementById('playerName').textContent = `${avatar} ${name}`;
-
-let myScore = 0;
-let currentQuestionData = null;
-let timerInterval = null;
-let showQuestionOnPhone = true;
+const AVATARS = ['🐶', '🐱', '🐼', '🦊', '🦁', '🐸', '🐧', '🦄', '🐝', '🐬', '🦖', '🐙'];
+const LS_KEYS = { pid: 'kwizkamp_pid', name: 'kwizkamp_name', avatar: 'kwizkamp_avatar' };
 
 const views = {
+  join: document.getElementById('viewJoin'),
   waiting: document.getElementById('viewWaiting'),
-  question: document.getElementById('viewQuestion'),
+  getReady: document.getElementById('viewGetReadyP'),
+  question: document.getElementById('viewQuestionP'),
   result: document.getElementById('viewResult'),
   final: document.getElementById('viewFinal')
 };
-
-function showView(viewName) {
+function showView(name) {
   Object.values(views).forEach(v => v.classList.add('hidden'));
-  views[viewName].classList.remove('hidden');
+  views[name].classList.remove('hidden');
+  document.getElementById('reactionBar').classList.toggle('hidden', name === 'join' || name === 'final');
 }
 
-// ---------- CONNECTION ----------
+// ---------- Ambient embers ----------
+const emberLayer = document.getElementById('embers');
+for (let i = 0; i < 14; i++) {
+  const s = document.createElement('span');
+  s.style.left = Math.random() * 100 + 'vw';
+  s.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+  s.style.animationDuration = (7 + Math.random() * 8) + 's';
+  s.style.animationDelay = (Math.random() * 8) + 's';
+  emberLayer.appendChild(s);
+}
+
+// ---------- AVATAR PICKER ----------
+let selectedAvatar = localStorage.getItem(LS_KEYS.avatar) || AVATARS[0];
+const avatarGrid = document.getElementById('avatarGrid');
+AVATARS.forEach(a => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'avatar-choice' + (a === selectedAvatar ? ' selected' : '');
+  btn.textContent = a;
+  btn.addEventListener('click', () => {
+    selectedAvatar = a;
+    [...avatarGrid.children].forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+  avatarGrid.appendChild(btn);
+});
+
+const nameInput = document.getElementById('nameInput');
+nameInput.value = localStorage.getItem(LS_KEYS.name) || '';
+
+let showQuestionOnPhone = true;
+let currentDuration = 20;
+let currentStartedAt = null;
+let timerInterval = null;
+
+// ---------- JOIN ----------
+document.getElementById('joinForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim().slice(0, 20) || 'Camper';
+  doJoin(name, selectedAvatar);
+});
+
+function doJoin(name, avatar) {
+  socket.emit('player-join', {
+    name,
+    avatar,
+    persistentId: localStorage.getItem(LS_KEYS.pid) || null
+  });
+}
+
 socket.on('connect', () => {
-  document.getElementById('connLost').classList.add('hidden');
-  socket.emit('player-join', { name, avatar, persistentId });
-});
-
-socket.on('disconnect', () => {
-  document.getElementById('connLost').classList.remove('hidden');
-  stopTimer();
-});
-
-socket.on('connect_error', () => {
-  document.getElementById('connLost').classList.remove('hidden');
+  const storedPid = localStorage.getItem(LS_KEYS.pid);
+  const storedName = localStorage.getItem(LS_KEYS.name);
+  if (storedPid && storedName) {
+    doJoin(storedName, selectedAvatar);
+  }
 });
 
 socket.on('joined', (data) => {
-  document.getElementById('playerName').textContent = `${data.avatar || avatar} ${data.name}`;
-  myScore = data.score || 0;
-  document.getElementById('playerScore').textContent = myScore;
+  localStorage.setItem(LS_KEYS.pid, data.persistentId);
+  localStorage.setItem(LS_KEYS.name, data.name);
+  localStorage.setItem(LS_KEYS.avatar, data.avatar);
+  document.getElementById('waitingName').textContent = data.name;
 });
 
 socket.on('waiting', () => showView('waiting'));
 
-socket.on('question-toggle', (val) => {
-  showQuestionOnPhone = val;
-  renderQuestionText();
+socket.on('kicked', () => {
+  localStorage.removeItem(LS_KEYS.pid);
+  alert('The host removed you from this game.');
+  location.reload();
 });
 
-function renderQuestionText() {
-  const qEl = document.getElementById('questionOnPhone');
-  const hint = document.getElementById('hintText');
-  if (showQuestionOnPhone && currentQuestionData) {
-    qEl.textContent = currentQuestionData.question;
-    qEl.classList.remove('hidden');
-    hint.classList.add('hidden');
-  } else {
-    qEl.textContent = '';
-    qEl.classList.add('hidden');
-    hint.classList.remove('hidden');
-  }
-}
+// ---------- GET READY ----------
+socket.on('get-ready', (data) => {
+  clearInterval(timerInterval);
+  document.getElementById('pGrNum').textContent = data.index + 1;
+  document.getElementById('pGrTotal').textContent = data.total;
+  let msLeft = data.countdownMs;
+  document.getElementById('pGrCount').textContent = Math.ceil(msLeft / 1000);
+  showView('getReady');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    msLeft -= 1000;
+    if (msLeft <= 0) { clearInterval(timerInterval); return; }
+    document.getElementById('pGrCount').textContent = Math.ceil(msLeft / 1000);
+  }, 1000);
+});
+
+// ---------- QUESTION ----------
+const optionGrid = document.getElementById('optionGrid');
+const SHAPES = ['▲', '◆', '●', '■'];
+
+let currentKind = 'mcq';
+const identForm = document.getElementById('identForm');
+const identInput = document.getElementById('identInput');
 
 socket.on('question', (data) => {
-  currentQuestionData = data;
-  showQuestionOnPhone = data.showQuestionOnPhone !== false;
+  clearInterval(timerInterval);
+  showQuestionOnPhone = data.showQuestionOnPhone;
+  currentDuration = data.duration;
+  currentStartedAt = data.startedAt;
+  currentKind = data.kind || 'mcq';
 
-  renderQuestionText();
+  document.getElementById('pQNum').textContent = `Q ${data.index + 1} / ${data.total}`;
+  const qText = document.getElementById('pQuestionText');
+  qText.textContent = data.question;
+  qText.style.visibility = showQuestionOnPhone ? 'visible' : 'hidden';
 
-  const optsContainer = document.getElementById('playerOptions');
-  optsContainer.innerHTML = '';
-
-  data.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'player-option';
-    btn.textContent = opt;
-    btn.addEventListener('click', () => submitAnswer(idx, btn));
-    optsContainer.appendChild(btn);
-  });
-
-  const timerEl = document.getElementById('timerPill');
-  timerEl.classList.remove('timer-over');
-  removeTimeUpOverlay();
-
-  document.body.classList.remove('body-correct', 'body-wrong');
-  showView('question');
-  startTimer(data.duration, data.startedAt);
-});
-
-function submitAnswer(idx, btn) {
-  if (!currentQuestionData) return;
-
-  const elapsed = (Date.now() - currentQuestionData.startedAt) / 1000;
-  if (elapsed >= currentQuestionData.duration) {
-    lockOptionsAndShowTimeUp();
-    return;
+  if (currentKind === 'identification') {
+    optionGrid.classList.add('hidden');
+    identForm.classList.remove('hidden');
+    identInput.value = '';
+    identInput.disabled = false;
+    identInput.focus();
+  } else {
+    identForm.classList.add('hidden');
+    optionGrid.classList.remove('hidden');
+    optionGrid.innerHTML = '';
+    data.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = `option-btn opt-${i}`;
+      btn.innerHTML = `<span class="shape">${SHAPES[i]}</span><span>${opt}</span>`;
+      btn.addEventListener('click', () => {
+        socket.emit('submit-answer', i);
+      });
+      optionGrid.appendChild(btn);
+    });
   }
 
-  socket.emit('submit-answer', idx);
+  showView('question');
+  runTimerRing();
+});
 
-  const allBtns = document.querySelectorAll('.player-option');
-  allBtns.forEach(b => b.classList.remove('chosen'));
-  btn.classList.add('chosen');
+identForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = identInput.value.trim();
+  if (!text) return;
+  socket.emit('submit-answer', text);
+});
+
+socket.on('question-toggle', (val) => {
+  showQuestionOnPhone = val;
+  const qText = document.getElementById('pQuestionText');
+  if (qText) qText.style.visibility = showQuestionOnPhone ? 'visible' : 'hidden';
+});
+
+function runTimerRing() {
+  const ring = document.getElementById('timerRing');
+  const num = document.getElementById('timerNum');
+  clearInterval(timerInterval);
+  function tick() {
+    const elapsed = (Date.now() - currentStartedAt) / 1000;
+    const remaining = Math.max(0, currentDuration - elapsed);
+    const pct = Math.max(0, (remaining / currentDuration) * 100);
+    ring.style.setProperty('--pct', pct.toFixed(1));
+    num.textContent = Math.ceil(remaining);
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      [...optionGrid.children].forEach(b => b.disabled = true);
+      identInput.disabled = true;
+    }
+  }
+  tick();
+  timerInterval = setInterval(tick, 200);
 }
 
 socket.on('answer-locked', (data) => {
-  if (data && typeof data.optionIndex === 'number') {
-    const allBtns = document.querySelectorAll('.player-option');
-    allBtns.forEach((b, i) => {
-      b.classList.remove('chosen');
-      if (i === data.optionIndex) b.classList.add('chosen');
+  if (data.text !== undefined) {
+    identInput.disabled = true;
+    identInput.value = data.text;
+  } else {
+    [...optionGrid.children].forEach((b, i) => {
+      b.classList.toggle('locked-in', i === data.optionIndex);
     });
   }
 });
 
+// ---------- RESULT ----------
 socket.on('result', (data) => {
-  stopTimer();
-  removeTimeUpOverlay();
+  clearInterval(timerInterval);
 
-  myScore = data.score;
-  document.getElementById('playerScore').textContent = myScore;
+  const identResult = document.getElementById('identResult');
+  if (data.kind === 'identification') {
+    identResult.classList.remove('hidden');
+    document.getElementById('identYourAnswer').textContent = data.yourAnswer || '(no answer)';
+    document.getElementById('identCorrectAnswer').textContent = data.correctText;
+  } else {
+    identResult.classList.add('hidden');
+    [...optionGrid.children].forEach((b, i) => {
+      b.disabled = true;
+      if (i === data.correctIndex) b.classList.add('correct-answer');
+      if (i === data.yourAnswer && !data.isCorrect) b.classList.add('wrong-answer');
+    });
+  }
 
-  const isCorrect = data.isCorrect;
-  document.body.classList.remove('body-correct', 'body-wrong');
-  document.body.classList.add(isCorrect ? 'body-correct' : 'body-wrong');
+  document.getElementById('resultEmoji').textContent = data.isCorrect ? '🎉' : '💨';
+  const title = document.getElementById('resultTitle');
+  title.textContent = data.isCorrect ? 'Correct!' : (data.yourAnswer == null ? "Time's up" : 'Not quite');
+  title.className = 'result-title ' + (data.isCorrect ? 'good' : 'bad');
 
-  document.getElementById('resultIcon').textContent = isCorrect ? '✅' : '❌';
-  document.getElementById('resultTitle').textContent = isCorrect ? 'CORRECT!' : 'WRONG';
-  document.getElementById('resultDetail').textContent = isCorrect
-    ? '+1 point'
-    : `Correct answer: ${currentQuestionData?.options[data.correctIndex] || '—'}`;
-  document.getElementById('resultScore').textContent = `${myScore} pts`;
-  document.getElementById('resultRank').textContent = `🏅 Rank: #${data.rank}`;
+  document.getElementById('pointsEarned').textContent = data.pointsEarned ? `+${data.pointsEarned}` : '+0';
+
+  const streakChip = document.getElementById('streakChip');
+  if (data.isCorrect && data.streak > 1) {
+    streakChip.textContent = `🔥 ${data.streak} in a row`;
+    streakChip.classList.remove('hidden');
+  } else {
+    streakChip.classList.add('hidden');
+  }
+
+  document.getElementById('resultRank').textContent = data.rank;
+  document.getElementById('resultScore').textContent = data.score;
 
   showView('result');
 });
 
+// ---------- FINAL ----------
 socket.on('personal-final', (data) => {
-  stopTimer();
-  document.body.classList.remove('body-correct', 'body-wrong');
-  document.getElementById('finalScore').textContent = `${data.score} pts`;
-  document.getElementById('finalRank').textContent = `🏅 Rank: #${data.rank}`;
+  clearInterval(timerInterval);
+  document.getElementById('finalRank').textContent = '#' + data.rank;
+  document.getElementById('finalScore').textContent = data.score;
   showView('final');
 });
 
-socket.on('reset', () => {
-  myScore = 0;
-  document.body.classList.remove('body-correct', 'body-wrong');
-  document.getElementById('playerScore').textContent = '0';
-  removeTimeUpOverlay();
-  showView('waiting');
-});
-
-// ---------- TIMER ----------
-function startTimer(duration, startedAt) {
-  stopTimer();
-  const timerEl = document.getElementById('timerPill');
-  const endTime = startedAt + duration * 1000;
-
-  const update = () => {
-    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-    timerEl.textContent = `⏱ ${remaining}s`;
-
-    if (remaining <= 5 && remaining > 0) {
-      timerEl.classList.add('timer-tense');
-    }
-
-    if (remaining <= 0) {
-      timerEl.textContent = `⏱ 0s`;
-      timerEl.classList.add('timer-over');
-      stopTimer();
-      lockOptionsAndShowTimeUp();
-    }
-  };
-  update();
-  timerInterval = setInterval(update, 250);
-}
-
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
-}
-
-function lockOptionsAndShowTimeUp() {
-  const allBtns = document.querySelectorAll('.player-option');
-  allBtns.forEach(b => {
-    b.disabled = true;
-    b.classList.add('locked');
-  });
-  showTimeUpOverlay();
-}
-
-function showTimeUpOverlay() {
-  if (document.getElementById('timeUpOverlay')) return;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'timeUpOverlay';
-  overlay.className = 'time-up-overlay';
-  overlay.innerHTML = `
-    <div class="time-up-icon">⏰</div>
-    <div class="time-up-text">TIME'S UP!</div>
-    <div class="time-up-sub">Waiting for reveal...</div>
-  `;
-
-  const questionView = document.getElementById('viewQuestion');
-  if (questionView) questionView.appendChild(overlay);
-}
-
-function removeTimeUpOverlay() {
-  const overlay = document.getElementById('timeUpOverlay');
-  if (overlay) overlay.remove();
-  const timerEl = document.getElementById('timerPill');
-  timerEl.classList.remove('timer-tense');
-}
-
-// ---------- EMOJI REACTION ----------
+// ---------- REACTIONS ----------
 document.querySelectorAll('.reaction-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const emoji = btn.dataset.emoji;
-    socket.emit('player-reaction', emoji);
-
-    // Local feedback (small bounce)
-    btn.classList.add('sent');
-    setTimeout(() => btn.classList.remove('sent'), 300);
+    socket.emit('player-reaction', btn.dataset.emoji);
+    btn.disabled = true;
+    setTimeout(() => { btn.disabled = false; }, 2000);
   });
+});
+
+// ---------- RESET ----------
+socket.on('reset', () => {
+  clearInterval(timerInterval);
+  showView('waiting');
 });
