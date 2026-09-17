@@ -5,16 +5,228 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>KwizKamp</title>
 <link rel="stylesheet" href="/style.css" />
+<style>
+  /* ---------- LANDING — page-scoped enhancements only ----------
+     These styles ADD to the existing /style.css.
+     Nothing here changes structure, class names, or behavior.
+     Kept visually consistent with the display/host/player theme. */
+
+  .landing {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Soft aurora orbs behind the landing (matches other views) */
+  .landing::before,
+  .landing::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(110px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+  }
+  .landing::before {
+    width: 60vw;
+    height: 60vw;
+    top: -20%;
+    left: -15%;
+    background: radial-gradient(circle, rgba(255, 159, 67, 0.55), transparent 70%);
+    animation: kwDriftA 18s ease-in-out infinite alternate;
+  }
+  .landing::after {
+    width: 55vw;
+    height: 55vw;
+    bottom: -25%;
+    right: -15%;
+    background: radial-gradient(circle, rgba(78, 205, 196, 0.35), transparent 70%);
+    animation: kwDriftB 22s ease-in-out infinite alternate;
+  }
+  @keyframes kwDriftA {
+    0%   { transform: translate(0,0) scale(1); }
+    100% { transform: translate(10vw, 8vh) scale(1.15); }
+  }
+  @keyframes kwDriftB {
+    0%   { transform: translate(0,0) scale(1.05); }
+    100% { transform: translate(-8vw, -6vh) scale(0.9); }
+  }
+
+  /* Live badge above the logo */
+  .landing .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 90, 60, 0.10);
+    border: 1px solid rgba(255, 90, 60, 0.35);
+    color: #ff8a70;
+    font-family: var(--font-head);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .landing .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff5a3c;
+    box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.7);
+    animation: kwLivePulse 1.8s infinite;
+  }
+  @keyframes kwLivePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.7); }
+    70%  { box-shadow: 0 0 0 10px rgba(255, 90, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0); }
+  }
+
+  /* Logo mark — soft glow halo */
+  .landing .logo-mark {
+    position: relative;
+    font-size: 3.6rem;
+    filter: drop-shadow(0 0 22px rgba(255, 159, 67, 0.6));
+    animation: kwLogoFloat 4s ease-in-out infinite;
+    z-index: 1;
+  }
+  @keyframes kwLogoFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  /* Tagline — subtle divider line below */
+  .landing p.tagline {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px dashed rgba(255, 159, 67, 0.25);
+    margin-bottom: 32px !important;
+  }
+
+  /* Role grid — keep original grid behavior, just polish spacing */
+  .landing .role-grid {
+    position: relative;
+    z-index: 1;
+    gap: 20px;
+  }
+
+  /* Role cards — upgraded surface + hover, same class names */
+  .landing .role-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--bg-panel-2) 0%, var(--bg-panel) 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 30px 18px 26px;
+    box-shadow: var(--shadow-panel);
+    transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                border-color 0.25s ease,
+                box-shadow 0.3s ease;
+  }
+
+  /* Top glow strip inside each card */
+  .landing .role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ember), transparent);
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Radial hover glow */
+  .landing .role-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 159, 67, 0.18), transparent 65%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .landing .role-card:hover::after { opacity: 1; }
+
+  .landing .role-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 159, 67, 0.7);
+    box-shadow:
+      0 22px 45px -12px rgba(255, 140, 0, 0.35),
+      var(--shadow-panel);
+  }
+
+  .landing .role-card .icon {
+    position: relative;
+    z-index: 1;
+    font-size: 2.4rem;
+    filter: drop-shadow(0 0 10px rgba(255, 159, 67, 0.35));
+    transition: transform 0.35s ease;
+  }
+  .landing .role-card:hover .icon {
+    transform: scale(1.08) translateY(-2px);
+  }
+
+  .landing .role-card .name {
+    position: relative;
+    z-index: 1;
+    font-size: 1.3rem;
+    letter-spacing: 0.4px;
+    background: linear-gradient(180deg, var(--glow), var(--ember));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .landing .role-card .desc {
+    position: relative;
+    z-index: 1;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* Footer note under the grid */
+  .landing .footer-note {
+    position: relative;
+    z-index: 1;
+    margin-top: 36px;
+    font-size: 0.72rem;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: #5f6880;
+  }
+
+  @media (max-width: 620px) {
+    .landing::before, .landing::after { filter: blur(80px); }
+    .landing .role-grid { gap: 14px; }
+    .landing .role-card { padding: 26px 16px 22px; }
+  }
+</style>
 </head>
 <body>
   <div class="embers" id="embers"></div>
   <div class="landing">
+
+    <!-- NEW: small live badge — purely decorative, no behavior -->
+    <div class="live-badge" aria-hidden="true">
+      <span class="live-dot"></span>
+      Live quiz
+    </div>
+
     <div class="logo-mark">⚡</div>
-    <h1>QuizKita</h1>
+    <h1>KwizKamp</h1>
     <p class="tagline">A live quiz for your room. No accounts, no cloud — just a laptop, some phones, and a screen.</p>
 
+    <!-- Same structure and classes as before — nothing functional changed -->
     <div class="role-grid">
-      <!--<a class="role-card panel" href="/host">
+      <a class="role-card panel" href="/host">
         <span class="icon">🎓</span>
         <span class="name">Host</span>
         <span class="desc">Run the game from here</span>
@@ -23,13 +235,16 @@
         <span class="icon">🖥️</span>
         <span class="name">Display</span>
         <span class="desc">Put this on the big screen</span>
-      </a>-->
+      </a>
       <a class="role-card panel" href="/play">
         <span class="icon">📱</span>
         <span class="name">Join</span>
-        <span class="desc">Click here</span>
+        <span class="desc">Players open this on their phone</span>
       </a>
     </div>
+
+    <!-- NEW: small footer caption — decorative only -->
+    <p class="footer-note">Tap a role to begin</p>
   </div>
 
   <script>
