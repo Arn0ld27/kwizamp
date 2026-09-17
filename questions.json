@@ -1,29 +1,89 @@
 {
   "questions": [
     {
-      "question": "Which planet is known as the Red Planet?",
-      "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "type": "mcq",
+      "question": "What is the primary source of energy for the Earth?",
+      "options": ["The Moon", "The Sun", "Wind", "Volcanoes"],
       "correct": 1
     },
     {
-      "question": "What is the largest mammal on Earth?",
-      "options": ["African Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+      "type": "mcq",
+      "question": "What is the national language of Brazil?",
+      "options": ["Spanish", "Portuguese", "French", "English"],
       "correct": 1
     },
     {
-      "question": "Who painted the Mona Lisa?",
-      "options": ["Van Gogh", "Picasso", "Leonardo da Vinci", "Michelangelo"],
+      "type": "mcq",
+      "question": "What is the largest desert in the world?",
+      "options": ["Sahara Desert", "Gobi Desert", "Antarctic Desert", "Mojave Desert"],
       "correct": 2
     },
     {
-      "question": "What is the capital of Japan?",
-      "options": ["Seoul", "Beijing", "Bangkok", "Tokyo"],
+      "type": "mcq",
+      "question": "Which vitamin is obtained from sunlight?",
+      "options": ["Vitamin A", "Vitamin B12", "Vitamin C", "Vitamin D"],
       "correct": 3
     },
     {
-      "question": "Which element has the chemical symbol 'O'?",
-      "options": ["Gold", "Oxygen", "Osmium", "Oganesson"],
-      "correct": 1
+      "type": "mcq",
+      "question": "What is the smallest prime number?",
+      "options": ["0", "1", "2", "3"],
+      "correct": 2
+    },
+    {
+      "type": "truefalse",
+      "question": "Bats are blind.",
+      "correct": false
+    },
+    {
+      "type": "truefalse",
+      "question": "Lightning never strikes the same place twice.",
+      "correct": false
+    },
+    {
+      "type": "truefalse",
+      "question": "Honey never spoils.",
+      "correct": true
+    },
+    {
+      "type": "truefalse",
+      "question": "The Nile River is the longest river in the world.",
+      "correct": true
+    },
+    {
+      "type": "truefalse",
+      "question": "Dolphins are mammals, not fish.",
+      "correct": true
+    },
+    {
+      "type": "identification",
+      "question": "What is the name of the closest star to Earth?",
+      "answer": "The Sun",
+      "acceptable": ["Sun", "the sun"]
+    },
+    {
+      "type": "identification",
+      "question": "What is the name of the bear known for its black and white coloring?",
+      "answer": "Panda",
+      "acceptable": ["panda", "Giant Panda", "giant panda"]
+    },
+    {
+      "type": "identification",
+      "question": "What is the name of the fairy tale character who loses her glass slipper?",
+      "answer": "Cinderella",
+      "acceptable": ["cinderella"]
+    },
+    {
+      "type": "identification",
+      "question": "What planet is closest to the Sun?",
+      "answer": "Mercury",
+      "acceptable": ["mercury"]
+    },
+    {
+      "type": "identification",
+      "question": "How many continents are there on Earth?",
+      "answer": "7",
+      "acceptable": ["Seven", "seven"]
     }
   ]
 }
