@@ -6,59 +6,88 @@
 <title>Host · KwizKamp</title>
 <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
-  <div class="host-wrapper">
+<body class="host-body">
+  <div class="host-shell">
 
-    <div class="host-header">
-      <div class="logo-badge">
-        <span>🎓</span>
-        <h1>HOST</h1>
-      </div>
-      <div class="host-header-right">
-        <button class="toggle-btn" id="toggleQBtn" title="Show/hide question on player phones">👁 Q on 📱: ON</button>
-        <div class="host-status" id="hostStatus">Lobby</div>
-        <div class="host-timer" id="hostTimer"></div>
-      </div>
-    </div>
+    <!-- LEFT: ROSTER -->
+    <aside class="host-sidebar">
+      <div class="host-brand"><span>⚡</span><h2>KwizKamp</h2></div>
+      <div class="roster-count"><span id="rosterCount">0</span> camper(s) here</div>
+      <div class="roster-list" id="rosterList"></div>
+    </aside>
 
-    <div id="viewLobby" class="host-view">
-      <h2 class="lobby-title">Waiting for players...</h2>
-      <div class="lobby-count"><span id="lobbyCount">0</span> joined</div>
-      <div class="lobby-players" id="lobbyPlayers"></div>
-      <div class="lobby-url">
-        📱 Players: <strong id="playerUrl">http://localhost:3000</strong>
-      </div>
-      <button class="next-btn host-btn" id="startBtn" disabled>▶ START QUIZ</button>
-    </div>
+    <!-- CENTER: STAGE -->
+    <main class="host-main">
 
-    <div id="viewQuestion" class="host-view hidden">
-      <div class="host-q-number" id="hostQNumber">Q 1 / 5</div>
-      <div class="host-question-text" id="hostQuestion">—</div>
-      <div class="host-options" id="hostOptions"></div>
-      <div class="host-progress">
-        <div class="progress-info">📥 Answered: <span id="answeredCount">0</span> / <span id="totalPlayers">0</span></div>
-        <div class="progress-container"><div class="progress-bar" id="hostProgressBar"></div></div>
+      <div class="host-topbar">
+        <span class="pill" id="statusPill">Lobby</span>
+        <button class="btn btn-ghost" id="newGameBtn">↺ New game</button>
       </div>
-      <button class="next-btn host-btn" id="revealBtn">🔓 REVEAL ANSWER</button>
-    </div>
 
-    <div id="viewReveal" class="host-view hidden">
-      <div class="host-q-number" id="revealQNumber">Q 1 / 5</div>
-      <div class="host-question-text" id="revealQuestion">—</div>
-      <div class="host-options" id="revealOptions"></div>
-      <div class="correct-answer" id="correctAnswer">✅ Correct: —</div>
-      <button class="next-btn host-btn" id="nextBtn">➡ NEXT QUESTION</button>
-    </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-    <div id="viewEnd" class="host-view hidden">
-      <h2 class="end-title">🏆 QUIZ ENDED</h2>
-      <p class="waiting-sub" style="text-align:center; margin-bottom:1.5rem;">Click "Show Results" to display ranking on screen</p>
-      <div class="action-row">
-        <button class="next-btn host-btn" id="showResultsBtn">🏆 SHOW RESULTS</button>
-        <button class="next-btn host-btn download-btn" id="downloadBtn">💾 DOWNLOAD CSV</button>
+      <div class="host-stage panel">
+
+        <!-- LOBBY -->
+        <div id="stageLobby">
+          <p style="color:var(--text-muted); margin-bottom: 18px;">Players join at <strong id="playUrl">/play</strong> on this Wi-Fi.</p>
+          <div class="duration-row" style="justify-content:center;">
+            <label for="durationSlider" style="color:var(--text-muted); font-weight:700;">Time per question</label>
+            <input type="range" id="durationSlider" min="5" max="60" value="20" />
+            <span id="durationLabel">20s</span>
+          </div>
+          <div style="margin-top: 22px;">
+            <button class="btn btn-primary" id="startBtn" disabled>Start quiz</button>
+          </div>
+        </div>
+
+        <!-- GET READY -->
+        <div id="stageGetReady" class="hidden">
+          <p class="host-question-preview">Get ready — Question <span id="grHostNum">1</span> of <span id="grHostTotal">5</span></p>
+        </div>
+
+        <!-- QUESTION -->
+        <div id="stageQuestion" class="hidden">
+          <div class="pill" id="qCounter">Q 1 / 5</div>
+          <p class="host-question-preview" id="hostQuestionText">—</p>
+          <div class="pill" id="answerCount">0 / 0 answered</div>
+          <div class="host-controls">
+            <button class="btn btn-primary" id="revealBtn">Reveal answer</button>
+          </div>
+        </div>
+
+        <!-- REVEAL -->
+        <div id="stageReveal" class="hidden">
+          <p class="host-question-preview">Correct answer: <span id="revealCorrectText" style="color:var(--cool);">—</span></p>
+          <div class="host-controls">
+            <button class="btn btn-primary" id="nextBtn">Next question</button>
+          </div>
+        </div>
+
+        <!-- ENDED -->
+        <div id="stageEnded" class="hidden">
+          <p class="host-question-preview">🏁 Quiz complete!</p>
+          <div class="host-controls">
+            <button class="btn btn-cool" id="showResultsBtn">Show ranking on display</button>
+            <a class="btn btn-ghost" id="exportBtn" href="/export-results.csv" download>⬇ Export results (CSV)</a>
+          </div>
+        </div>
+
       </div>
-      <button class="next-btn host-btn" id="newGameBtn" style="margin-top:1rem;">🔄 NEW GAME</button>
-    </div>
+
+      <div class="host-controls" style="justify-content:flex-start;">
+        <label class="pill" style="cursor:pointer;">
+          <input type="checkbox" id="phoneToggle" checked style="accent-color: var(--ember);" />
+          Show question text on phones
+        </label>
+      </div>
+    </main>
+
+    <!-- RIGHT: LEADERBOARD -->
+    <aside class="host-side-right">
+      <h2 style="font-size:1rem; color:var(--text-muted); margin-bottom: 12px;">Leaderboard</h2>
+      <div class="leaderboard-mini" id="leaderboardMini"></div>
+    </aside>
 
   </div>
 
