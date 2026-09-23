@@ -7,91 +7,391 @@
 <link rel="stylesheet" href="/style.css" />
 </head>
 <body class="host-body">
-  <div class="host-shell">
 
-    <!-- LEFT: ROSTER -->
+  <div id="hostGate" class="player-view" style="min-height:100vh;">
+    <div class="display-logo"><span style="font-size:2.2rem;">⚡</span><h1 style="font-size:2rem;color:var(--glow);">KwizKamp Host</h1></div>
+    <form class="join-form" id="pinForm">
+      <input type="password" id="pinInput" placeholder="Enter host PIN" inputmode="numeric" autocomplete="off" required />
+      <button type="submit" class="btn btn-primary">Unlock host panel</button>
+      <p id="pinError" class="hidden" style="color:var(--danger); font-weight:700;">Wrong PIN — try again.</p>
+    </form>
+  </div>
+
+  <div class="host-shell hidden" id="hostShell">
     <aside class="host-sidebar">
       <div class="host-brand"><span>⚡</span><h2>KwizKamp</h2></div>
       <div class="roster-count"><span id="rosterCount">0</span> camper(s) here</div>
       <div class="roster-list" id="rosterList"></div>
     </aside>
 
-    <!-- CENTER: STAGE -->
     <main class="host-main">
-
       <div class="host-topbar">
-        <span class="pill" id="statusPill">Lobby</span>
-        <button class="btn btn-ghost" id="newGameBtn">↺ New game</button>
+        <div class="host-tabs" id="hostTabs">
+          <button class="host-tab active" data-tab="game">🎮 Game</button>
+          <button class="host-tab" data-tab="editor">📝 Questions</button>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="pill" id="statusPill">Lobby</span>
+          <span class="pill" id="modePill" style="display:none;">🎒 School</span>
+          <button class="btn btn-ghost" id="newGameBtn">↺ New game</button>
+        </div>
       </div>
 
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-      <div class="host-stage panel">
+      <div id="tabGame" class="host-tab-panel">
+        <div class="host-stage panel">
 
-        <!-- LOBBY -->
-        <div id="stageLobby">
-          <p style="color:var(--text-muted); margin-bottom: 18px;">Players join at <strong id="playUrl">/play</strong> on this Wi-Fi.</p>
-          <div class="duration-row" style="justify-content:center;">
-            <label for="durationSlider" style="color:var(--text-muted); font-weight:700;">Time per question</label>
-            <input type="range" id="durationSlider" min="5" max="60" value="20" />
-            <span id="durationLabel">20s</span>
+          <div id="stageLobby">
+            <p style="color:var(--text-muted); margin-bottom: 18px;">Players join at <strong id="playUrl">/play</strong> on this Wi-Fi.</p>
+
+            <div style="margin-bottom: 22px;">
+              <p style="color:var(--text-muted); font-weight:700; margin-bottom: 10px;">Quiz mode</p>
+              <div class="mode-toggle" id="modeToggle">
+                <button type="button" class="mode-btn active" data-mode="school">
+                  <span class="mode-icon">🎒</span>
+                  <span class="mode-name">School Quiz</span>
+                  <span class="mode-sub">Speed/flat/custom · shared ranks</span>
+                </button>
+                <button type="button" class="mode-btn" data-mode="quizbee">
+                  <span class="mode-icon">🐝</span>
+                  <span class="mode-name">Quiz Bee</span>
+                  <span class="mode-sub">By round · tie breaker</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="schoolScoringWrap" style="margin-bottom: 20px;">
+              <p style="color:var(--text-muted); font-weight:700; margin-bottom: 10px;">School scoring</p>
+              <div class="mode-toggle" id="schoolScoringToggle" style="grid-template-columns: repeat(3, 1fr);">
+                <button type="button" class="mode-btn active" data-scoring="speed">
+                  <span class="mode-icon">⚡</span>
+                  <span class="mode-name">Speed</span>
+                  <span class="mode-sub">500–1000 · streak</span>
+                </button>
+                <button type="button" class="mode-btn" data-scoring="flat">
+                  <span class="mode-icon">📏</span>
+                  <span class="mode-name">Flat</span>
+                  <span class="mode-sub">One value</span>
+                </button>
+                <button type="button" class="mode-btn" data-scoring="custom">
+                  <span class="mode-icon">🎯</span>
+                  <span class="mode-name">Custom</span>
+                  <span class="mode-sub">Per type</span>
+                </button>
+              </div>
+
+              <div id="flatPointsWrap" class="hidden" style="margin-top: 14px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                <label for="flatPointsInput" style="color:var(--text-muted); font-weight:700;">Points per correct:</label>
+                <input type="number" id="flatPointsInput" min="1" max="100000" value="1000"
+                  style="width:120px; padding:10px 14px; border-radius:10px; background:var(--bg-panel-2); color:var(--text); border:2px solid var(--line); font-weight:800; font-family:var(--font-head); text-align:center; font-size:1.05rem;" />
+                <span style="color:var(--text-muted); font-weight:700;">pts</span>
+              </div>
+
+              <div id="customPointsWrap" class="hidden" style="margin-top: 14px;">
+                <div class="custom-points-table">
+                  <div class="cpt-row">
+                    <span class="cpt-label">🅰️ Multiple choice</span>
+                    <input type="number" id="customMcq" min="1" max="100000" value="1000" class="cpt-input" />
+                    <span class="cpt-unit">pts</span>
+                  </div>
+                  <div class="cpt-row">
+                    <span class="cpt-label">✅ True / False</span>
+                    <input type="number" id="customTf" min="1" max="100000" value="1000" class="cpt-input" />
+                    <span class="cpt-unit">pts</span>
+                  </div>
+                  <div class="cpt-row">
+                    <span class="cpt-label">✏️ Identification</span>
+                    <input type="number" id="customIdent" min="1" max="100000" value="1000" class="cpt-input" />
+                    <span class="cpt-unit">pts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="duration-row" id="durationRow" style="justify-content:center;">
+              <label for="durationSlider" style="color:var(--text-muted); font-weight:700;">Time per question</label>
+              <input type="range" id="durationSlider" min="5" max="60" value="20" />
+              <span id="durationLabel">20s</span>
+            </div>
+
+            <div id="roundSlidersWrap" class="hidden" style="width:100%; max-width:620px; margin: 0 auto;">
+              <p style="color:var(--text-muted); font-weight:700; margin-bottom: 10px;">Time limit per round</p>
+              <div id="roundSliders" class="round-sliders"></div>
+            </div>
+
+            <div class="lightning-settings">
+              <p class="ls-title">⚡ Lightning Round (last N questions)</p>
+              <p class="ls-sub">Each player gets a DIFFERENT question. Anti-cheat mode.</p>
+              <div class="ls-row">
+                <label for="lightningInput" class="ls-label">Number of lightning questions</label>
+                <input type="number" id="lightningInput" min="0" max="20" value="3" class="ls-input" />
+                <span class="ls-hint">0 = disabled</span>
+              </div>
+              <div class="ls-row">
+                <label for="rouletteInput" class="ls-label">Roulette reveal duration (ms)</label>
+                <input type="number" id="rouletteInput" min="3000" max="15000" step="500" value="6500" class="ls-input" />
+                <span class="ls-hint">3–15 sec</span>
+              </div>
+            </div>
+
+            <div class="manual-timer-setting">
+              <label class="mt-toggle">
+                <input type="checkbox" id="manualTimerToggle" style="accent-color: var(--ember);" />
+                <span class="mt-text">⏸ Manual timer start</span>
+              </label>
+              <p class="mt-sub">Kapag ON, hindi mag-uumpisa yung timer hanggang sa i-click mo yung <strong>▶ Start timer</strong> button sa bawat question.</p>
+            </div>
+
+            <div class="host-toggles" style="margin-top: 18px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+              <label class="pill" style="cursor:pointer;">
+                <input type="checkbox" id="phoneToggle" checked style="accent-color: var(--ember); margin-right:6px;" />
+                Show question text on phones
+              </label>
+              <label class="pill" style="cursor:pointer;">
+                <input type="checkbox" id="showScoresToggle" style="accent-color: var(--ember); margin-right:6px;" />
+                Show scores to players
+              </label>
+            </div>
+
+            <div style="margin-top: 22px;">
+              <button class="btn btn-primary" id="startBtn" disabled>Start quiz</button>
+            </div>
           </div>
-          <div style="margin-top: 22px;">
-            <button class="btn btn-primary" id="startBtn" disabled>Start quiz</button>
+
+          <div id="stageGetReady" class="hidden">
+            <p class="host-question-preview">Get ready — Question <span id="grHostNum">1</span> of <span id="grHostTotal">5</span></p>
+            <p id="grHostRound" style="color:var(--text-muted); font-weight:700;"></p>
+            <div id="grLightningBadge" class="lightning-badge hidden">⚡ LIGHTNING ROUND</div>
           </div>
-        </div>
 
-        <!-- GET READY -->
-        <div id="stageGetReady" class="hidden">
-          <p class="host-question-preview">Get ready — Question <span id="grHostNum">1</span> of <span id="grHostTotal">5</span></p>
-        </div>
+          <div id="stageQuestion" class="hidden">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+              <div class="pill" id="qCounter">Q 1 / 5</div>
+              <div class="pill" id="roundBadge" style="display:none;">Round 1 · Easy · 1 pt</div>
+            </div>
+            <div id="qLightningBadge" class="lightning-badge hidden">
+              ⚡ LIGHTNING ROUND <span id="qLightningCounter"></span>
+            </div>
+            <p class="host-question-preview" id="hostQuestionText">—</p>
+            <div class="pill" id="answerCount">0 / 0 answered</div>
 
-        <!-- QUESTION -->
-        <div id="stageQuestion" class="hidden">
-          <div class="pill" id="qCounter">Q 1 / 5</div>
-          <p class="host-question-preview" id="hostQuestionText">—</p>
-          <div class="pill" id="answerCount">0 / 0 answered</div>
-          <div class="host-controls">
-            <button class="btn btn-primary" id="revealBtn">Reveal answer</button>
+            <div id="manualTimerControls" class="manual-timer-controls hidden">
+              <div class="mtc-status" id="mtcStatus">⏸ Waiting for host to start timer</div>
+              <button class="btn btn-primary" id="startTimerBtn">▶ Start timer</button>
+            </div>
+
+            <div class="host-controls">
+              <button class="btn btn-primary" id="revealBtn">Reveal answer</button>
+            </div>
           </div>
-        </div>
 
-        <!-- REVEAL -->
-        <div id="stageReveal" class="hidden">
-          <p class="host-question-preview">Correct answer: <span id="revealCorrectText" style="color:var(--cool);">—</span></p>
-          <div class="host-controls">
-            <button class="btn btn-primary" id="nextBtn">Next question</button>
+          <div id="stageReveal" class="hidden">
+            <p class="host-question-preview">Correct answer: <span id="revealCorrectText" style="color:var(--cool);">—</span></p>
+            <div class="host-controls">
+              <button class="btn btn-primary" id="nextBtn">Next question</button>
+            </div>
           </div>
-        </div>
 
-        <!-- ENDED -->
-        <div id="stageEnded" class="hidden">
-          <p class="host-question-preview">🏁 Quiz complete!</p>
-          <div class="host-controls">
-            <button class="btn btn-cool" id="showResultsBtn">Show ranking on display</button>
-            <a class="btn btn-ghost" id="exportBtn" href="/export-results.csv" download>⬇ Export results (CSV)</a>
+          <div id="stageEnded" class="hidden">
+            <p class="host-question-preview">🏁 Quiz complete!</p>
+
+            <div id="tiePanel" class="hidden" style="width:100%; max-width:560px; margin: 10px auto 0;">
+              <div class="tie-alert">
+                <div style="font-size:1.6rem;">⚠️</div>
+                <div style="font-weight:800; font-size:1.1rem;" id="tieTitle">Tie detected!</div>
+                <div id="tieList" style="color:var(--text-muted); font-size:0.95rem; margin-top:6px;"></div>
+                <button class="btn btn-primary" id="startTieBtn" style="margin-top:14px;">🐝 Start Tie Breaker</button>
+              </div>
+            </div>
+
+            <div class="host-controls" style="margin-top: 16px; flex-wrap: wrap;">
+              <button class="btn btn-primary" id="startRouletteBtn">🎲 Start Roulette</button>
+              <button class="btn btn-ghost hidden" id="closeRouletteBtn">✕ Close Roulette</button>
+              <button class="btn btn-cool" id="showResultsBtn">🏆 Show ranking on display</button>
+              <a class="btn btn-ghost" id="exportBtn" href="/export-results.csv" download>⬇ Export results (CSV)</a>
+            </div>
           </div>
-        </div>
 
+          <div id="stageTieBreaker" class="hidden">
+            <div class="pill" id="tbCounter">Tie Breaker — Q 1 / 3</div>
+            <p class="host-question-preview" id="tbQuestionText">—</p>
+            <div class="pill" id="tbRemaining">0 remaining</div>
+            <p style="color:var(--text-muted);" id="tbCorrectText"></p>
+            <div class="host-controls">
+              <button class="btn btn-primary hidden" id="tbNextBtn">Next tie breaker question</button>
+              <button class="btn btn-primary hidden" id="tbFinishBtn">Finish tie breaker</button>
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <div class="host-controls" style="justify-content:flex-start;">
-        <label class="pill" style="cursor:pointer;">
-          <input type="checkbox" id="phoneToggle" checked style="accent-color: var(--ember);" />
-          Show question text on phones
-        </label>
+      <div id="tabEditor" class="host-tab-panel hidden">
+        <div class="editor-shell panel">
+          <div class="editor-header">
+            <div>
+              <h2 class="editor-title">📝 Question Editor</h2>
+              <p class="editor-sub">
+                <span id="editorSourcePill" class="pill">source: questions.json</span>
+                <span id="editorCountPill" class="pill">0 questions</span>
+                <span id="editorRoundPill" class="pill">rounds: —</span>
+              </p>
+            </div>
+            <div class="editor-actions">
+              <button class="btn btn-ghost" id="importBtn" type="button">📥 Import</button>
+              <button class="btn btn-ghost" id="exportBtnQ" type="button">📤 Export</button>
+              <button class="btn btn-ghost" id="revertBtn" type="button">↺ Revert to original</button>
+              <button class="btn btn-primary" id="saveBtn" type="button">💾 Save changes</button>
+            </div>
+          </div>
+
+          <div id="editorLockedBanner" class="editor-locked hidden">
+            🔒 Editing is locked while a game is in progress. Finish or reset the game to edit questions.
+          </div>
+
+          <div class="editor-shuffle-row">
+            <label class="pill" style="cursor:pointer;">
+              <input type="checkbox" id="shuffleToggle" style="accent-color: var(--ember); margin-right:6px;" />
+              🔀 Shuffle questions at game start
+            </label>
+            <span style="color:var(--text-muted); font-size:0.85rem;">(Options are always shuffled per player.)</span>
+          </div>
+
+          <div class="editor-list-head">
+            <span>#</span>
+            <span>Type</span>
+            <span>Round</span>
+            <span>Question</span>
+            <span>Clincher</span>
+            <span>Actions</span>
+          </div>
+          <div class="editor-list" id="editorList"></div>
+
+          <div class="editor-list-actions">
+            <button class="btn btn-primary" id="addQuestionBtn" type="button">➕ Add question</button>
+          </div>
+        </div>
       </div>
+
     </main>
 
-    <!-- RIGHT: LEADERBOARD -->
     <aside class="host-side-right">
       <h2 style="font-size:1rem; color:var(--text-muted); margin-bottom: 12px;">Leaderboard</h2>
       <div class="leaderboard-mini" id="leaderboardMini"></div>
     </aside>
+  </div>
 
+  <div id="editorModal" class="modal-backdrop hidden">
+    <div class="modal panel">
+      <div class="modal-head">
+        <h2 id="modalTitle">✏️ Edit question</h2>
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-form">
+          <div class="form-row">
+            <label class="form-label">Type</label>
+            <div class="form-type-toggle" id="formTypeToggle">
+              <button type="button" class="type-btn active" data-type="mcq">Multiple choice</button>
+              <button type="button" class="type-btn" data-type="truefalse">True / False</button>
+              <button type="button" class="type-btn" data-type="identification">Identification</button>
+            </div>
+          </div>
+
+          <div class="form-row form-row-2">
+            <div>
+              <label class="form-label" for="formRound">Round</label>
+              <input type="number" id="formRound" min="1" max="20" value="1" class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Clincher</label>
+              <label class="pill" style="cursor:pointer;">
+                <input type="checkbox" id="formClincher" style="accent-color: var(--ember); margin-right:6px;" />
+                Use in tie breaker pool
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="formQuestion">Question text</label>
+            <textarea id="formQuestion" rows="3" class="form-input" placeholder="Type your question here..."></textarea>
+          </div>
+
+          <div id="formMcq" class="form-section">
+            <label class="form-label">Options (mark the correct one)</label>
+            <div class="form-options" id="formOptions"></div>
+          </div>
+
+          <div id="formTf" class="form-section hidden">
+            <label class="form-label">Correct answer</label>
+            <div class="form-type-toggle" id="formTfToggle">
+              <button type="button" class="type-btn active" data-tf="true">✅ True</button>
+              <button type="button" class="type-btn" data-tf="false">❌ False</button>
+            </div>
+          </div>
+
+          <div id="formIdent" class="form-section hidden">
+            <div class="form-row">
+              <label class="form-label" for="formIdentAnswer">Correct answer</label>
+              <input type="text" id="formIdentAnswer" class="form-input" placeholder="e.g. Shape" />
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="formIdentAcceptable">Acceptable variants (comma-separated, optional)</label>
+              <input type="text" id="formIdentAcceptable" class="form-input" placeholder="e.g. form, 3D shape" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-preview">
+          <div class="preview-label">🖥️ Live preview (as shown on display)</div>
+          <div class="preview-frame">
+            <div class="preview-top">
+              <span id="previewQNum">Q 1 / N</span>
+              <span class="preview-round" id="previewRound">Round 1 · Easy · 1 pt</span>
+            </div>
+            <div class="preview-question" id="previewQuestion">Your question will appear here…</div>
+            <div class="preview-options" id="previewOptions"></div>
+            <div class="preview-answer hidden" id="previewAnswer"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <div id="modalErrors" class="modal-errors hidden"></div>
+        <div class="modal-foot-actions">
+          <button class="btn btn-ghost" id="modalCancel" type="button">Cancel</button>
+          <button class="btn btn-primary" id="modalApply" type="button">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="importModal" class="modal-backdrop hidden">
+    <div class="modal panel" style="max-width: 720px;">
+      <div class="modal-head">
+        <h2>📥 Import questions (JSON)</h2>
+        <button class="modal-close" id="importClose" type="button">✕</button>
+      </div>
+      <div class="modal-body" style="display:block;">
+        <p style="color:var(--text-muted); margin-top:0;">
+          Paste an array of questions, or an object with a <code>questions</code> array.
+        </p>
+        <textarea id="importText" class="form-input" rows="14" placeholder='{"questions": [ { "type": "mcq", "round": 1, "question": "…", "options": ["A","B","C","D"], "correct": 0 } ]}'></textarea>
+        <div id="importErrors" class="modal-errors hidden"></div>
+      </div>
+      <div class="modal-foot">
+        <div class="modal-foot-actions">
+          <button class="btn btn-ghost" id="importCancel" type="button">Cancel</button>
+          <button class="btn btn-primary" id="importApply" type="button">Load into editor</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/host.js"></script>
+  <script src="/host-editor.js"></script>
 </body>
 </html>
