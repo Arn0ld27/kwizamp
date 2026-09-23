@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Join · QuizKita</title>
+<title>Join · KwizKamp</title>
 <link rel="stylesheet" href="/style.css" />
 </head>
 <body class="player-body">
@@ -11,7 +11,7 @@
 
   <!-- JOIN -->
   <div id="viewJoin" class="player-view">
-    <div class="display-logo"><span style="font-size:2.2rem;">⚡</span><h1 style="font-size:2rem;color:var(--glow);">QuizKita</h1></div>
+    <div class="display-logo"><span style="font-size:2.2rem;">⚡</span><h1 style="font-size:2rem;color:var(--glow);">KwizKamp</h1></div>
     <form class="join-form" id="joinForm">
       <input type="text" id="nameInput" placeholder="Your name" maxlength="20" autocomplete="off" required />
       <div class="avatar-grid" id="avatarGrid"></div>
@@ -23,21 +23,31 @@
   <div id="viewWaiting" class="player-view hidden">
     <div style="font-size:2.4rem;">🔥</div>
     <h2 style="font-size:1.4rem;">You're in, <span id="waitingName">Camper</span>!</h2>
-    <p style="color:var(--text-muted);">Ang MAta sa monitor — the quiz starts soon.</p>
+    <p style="color:var(--text-muted);">Watch the big screen — the quiz starts soon.</p>
   </div>
 
   <!-- GET READY -->
   <div id="viewGetReadyP" class="player-view hidden">
     <p style="color:var(--text-muted);">Question <span id="pGrNum">1</span> of <span id="pGrTotal">5</span></p>
+    <div id="pGrLightning" class="lightning-badge hidden">⚡ LIGHTNING ROUND</div>
     <div class="get-ready-num" style="font-size:5rem;" id="pGrCount">3</div>
     <p style="color:var(--text-muted);">Get ready...</p>
   </div>
 
   <!-- QUESTION -->
   <div id="viewQuestionP" class="player-view hidden">
+    <div id="pLightningBadge" class="lightning-badge hidden">⚡ LIGHTNING</div>
     <div class="player-timer-ring" id="timerRing"><span id="timerNum">20</span></div>
     <div class="player-qnum" id="pQNum">Q 1 / 5</div>
+    <div class="player-round-badge hidden" id="pRoundBadge"></div>
     <div class="player-question-text" id="pQuestionText">—</div>
+
+    <!-- Waiting for timer state -->
+    <div id="pWaitingTimer" class="player-waiting-timer hidden">
+      <div class="pwt-icon">👀</div>
+      <div class="pwt-text">Look at the big screen!<br><small>Timer will start soon...</small></div>
+    </div>
+
     <div class="option-grid" id="optionGrid"></div>
     <form class="ident-form hidden" id="identForm">
       <input type="text" id="identInput" placeholder="Type your answer" maxlength="120" autocomplete="off" />
@@ -48,14 +58,14 @@
   <!-- RESULT -->
   <div id="viewResult" class="player-view hidden">
     <div class="result-emoji" id="resultEmoji">🎉</div>
-    <div class="result-title" id="resultTitle">May Tama ka!</div>
+    <div class="result-title" id="resultTitle">Correct!</div>
     <div class="points-earned" id="pointsEarned">+0</div>
     <div class="ident-result hidden" id="identResult">
       <p>Your answer: <strong id="identYourAnswer">—</strong></p>
       <p>Correct answer: <strong id="identCorrectAnswer">—</strong></p>
     </div>
     <div class="streak-chip hidden" id="streakChip">🔥 streak</div>
-    <div class="pill">Rank #<span id="resultRank">-</span> · <span id="resultScore">0</span> pts</div>
+    <div class="pill hidden" id="rankPill">Rank #<span id="resultRank">-</span> · <span id="resultScore">0</span> pts</div>
   </div>
 
   <!-- FINAL -->
@@ -63,6 +73,53 @@
     <p style="color:var(--text-muted);">Final rank</p>
     <div class="final-rank" id="finalRank">-</div>
     <p class="final-rank-label"><span id="finalScore">0</span> points — thanks for playing!</p>
+  </div>
+
+  <!-- TIE WATCH -->
+  <div id="viewTieWatch" class="player-view hidden">
+    <div style="font-size:3rem;">🐝</div>
+    <h2 style="font-size:1.3rem;">Tie Breaker in progress</h2>
+    <p style="color:var(--text-muted);" id="tieWatchText">Watch the big screen!</p>
+  </div>
+
+  <!-- TIE INTRO -->
+  <div id="viewTieIntroP" class="player-view hidden">
+    <div style="font-size:3rem;">🐝</div>
+    <h2 style="font-size:1.3rem;">TIE BREAKER!</h2>
+    <p style="color:var(--text-muted);">You're tied for the top spot. Get ready!</p>
+  </div>
+
+  <!-- TIE QUESTION -->
+  <div id="viewTieQuestionP" class="player-view hidden">
+    <div class="player-qnum" id="tbPQNum">Tie Breaker — Q 1</div>
+    <div class="player-round-badge hidden" id="tbPRoundBadge"></div>
+    <div class="player-question-text" id="tbPQuestionText">—</div>
+    <div class="option-grid" id="tbOptionGrid"></div>
+    <form class="ident-form hidden" id="tbIdentForm">
+      <input type="text" id="tbIdentInput" placeholder="Type your answer" maxlength="120" autocomplete="off" />
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <!-- TIE STILL IN -->
+  <div id="viewTieStillIn" class="player-view hidden">
+    <div class="result-emoji">🔥</div>
+    <div class="result-title good">Still in!</div>
+    <p style="color:var(--text-muted);">Wait for the next clincher question...</p>
+  </div>
+
+  <!-- TIE OUT -->
+  <div id="viewTieOut" class="player-view hidden">
+    <div class="result-emoji">💨</div>
+    <div class="result-title bad">Eliminated</div>
+    <p style="color:var(--text-muted);">Thanks for playing! Watch the big screen.</p>
+  </div>
+
+  <!-- TIE WON -->
+  <div id="viewTieWon" class="player-view hidden">
+    <div class="result-emoji">🏆</div>
+    <div class="result-title good">YOU WON!</div>
+    <p style="color:var(--text-muted);">Congratulations — you're the champion!</p>
   </div>
 
   <div class="reaction-bar hidden" id="reactionBar">
