@@ -1,10 +1,12 @@
 {
-  "name": "quiz-system",
-  "version": "1.0.0",
-  "description": "Room-based quiz system (LAN, no MySQL)",
+  "name": "kwizkamp",
+  "version": "2.0.0",
+  "description": "KwizKamp — room-based live quiz system (LAN, no database required)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "clean": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\"",
+    "fresh": "npm run clean && npm start"
   },
   "dependencies": {
     "express": "^4.19.2",
