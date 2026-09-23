@@ -2,88 +2,171 @@
   "questions": [
     {
       "type": "mcq",
-      "question": "What is the primary source of energy for the Earth?",
-      "options": ["The Moon", "The Sun", "Wind", "Volcanoes"],
+      "round": 1,
+      "question": "Which of the following is an example of a geometric shape?",
+      "options": ["Circle", "Freeform leaf", "Irregular splash", "Hand-drawn cloud"],
+      "correct": 0
+    },
+    {
+      "type": "mcq",
+      "round": 1,
+      "question": "Which type of balance has sides that differ in elements but have nearly equal visual weight?",
+      "options": ["Symmetrical balance", "Asymmetrical balance", "Circular balance", "Linear balance"],
       "correct": 1
     },
     {
       "type": "mcq",
-      "question": "What is the national language of Brazil?",
-      "options": ["Spanish", "Portuguese", "French", "English"],
+      "round": 1,
+      "question": "Which of the following is part of a visual identity?",
+      "options": ["Color palettes", "Employee attendance", "Financial records", "Inventory reports"],
+      "correct": 0
+    },
+    {
+      "type": "mcq",
+      "round": 1,
+      "question": "What is the first step in creating a brand identity design?",
+      "options": ["Typography", "Market research", "Purpose and positioning", "Supporting graphics"],
+      "correct": 2
+    },
+    {
+      "type": "mcq",
+      "round": 1,
+      "question": "Which step involves defining characteristics such as friendly, bold, elegant, or playful?",
+      "options": ["Brand Personality", "Polished Logo", "Typography", "Supporting Graphic"],
+      "correct": 0
+    },
+    {
+      "type": "mcq",
+      "round": 2,
+      "question": "Which of the following is a recommendation for professional typography?",
+      "options": ["Use overly fancy typefaces", "Make all text difficult to read", "Keep text easy to read", "Mix several typefaces within every word"],
+      "correct": 2
+    },
+    {
+      "type": "mcq",
+      "round": 2,
+      "question": "In establishing a brand's purpose and positioning, which question asks about the target audience?",
+      "options": ["Why does the company exist?", "Who does the brand serve?", "What font should be used?", "What colors should be selected?"],
       "correct": 1
     },
     {
       "type": "mcq",
-      "question": "What is the largest desert in the world?",
-      "options": ["Sahara Desert", "Gobi Desert", "Antarctic Desert", "Mojave Desert"],
-      "correct": 2
+      "round": 2,
+      "question": "Which of the following is considered a supporting graphic for a brand?",
+      "options": ["Icons and pictograms", "Financial statements", "Attendance sheets", "Examination scores"],
+      "correct": 0
     },
     {
       "type": "mcq",
-      "question": "Which vitamin is obtained from sunlight?",
-      "options": ["Vitamin A", "Vitamin B12", "Vitamin C", "Vitamin D"],
-      "correct": 3
+      "round": 2,
+      "question": "What is the main purpose of texture in graphic design?",
+      "options": ["To add depth and visual interest", "To remove visual details", "To make all objects two-dimensional", "To eliminate contrast"],
+      "correct": 0
     },
     {
       "type": "mcq",
-      "question": "What is the smallest prime number?",
-      "options": ["0", "1", "2", "3"],
-      "correct": 2
+      "round": 2,
+      "question": "What is the purpose of market research in brand identity design?",
+      "options": ["To understand the target audience and their personalities", "To select random colors", "To create shadows on objects", "To draw geometric shapes"],
+      "correct": 0
     },
     {
       "type": "truefalse",
-      "question": "Bats are blind.",
+      "round": 3,
+      "question": "Graphic design can be used for presentations, websites, mobile apps, posters, logos, and paintings.",
+      "correct": true
+    },
+    {
+      "type": "truefalse",
+      "round": 3,
+      "question": "A shape is three-dimensional while a form is two-dimensional.",
       "correct": false
     },
     {
       "type": "truefalse",
-      "question": "Lightning never strikes the same place twice.",
+      "round": 3,
+      "question": "Lines can emphasize, divide, organize content, or guide the viewer's eye.",
+      "correct": true
+    },
+    {
+      "type": "truefalse",
+      "round": 3,
+      "question": "Organic shapes are regular and mathematical.",
       "correct": false
     },
     {
       "type": "truefalse",
-      "question": "Honey never spoils.",
+      "round": 3,
+      "question": "Texture can add depth, contrast, focal points, and visual balance.",
       "correct": true
     },
     {
       "type": "truefalse",
-      "question": "The Nile River is the longest river in the world.",
+      "round": 3,
+      "question": "Symmetrical balance means that both sides are equal or visually similar.",
       "correct": true
     },
     {
       "type": "truefalse",
-      "question": "Dolphins are mammals, not fish.",
+      "round": 3,
+      "question": "A strong logo should be simple, scalable, and memorable.",
       "correct": true
     },
     {
       "type": "identification",
-      "question": "What is the name of the closest star to Earth?",
-      "answer": "The Sun",
-      "acceptable": ["Sun", "the sun"]
+      "round": 4,
+      "question": "The process that uses typography, images, colors, icons, and illustrations to communicate visually.",
+      "answer": "Graphic design",
+      "acceptable": ["graphic design", "graphic design process"]
     },
     {
       "type": "identification",
-      "question": "What is the name of the bear known for its black and white coloring?",
-      "answer": "Panda",
-      "acceptable": ["panda", "Giant Panda", "giant panda"]
+      "round": 4,
+      "question": "A two-dimensional external boundary with height and width.",
+      "answer": "Shape",
+      "acceptable": ["shape"]
     },
     {
       "type": "identification",
-      "question": "What is the name of the fairy tale character who loses her glass slipper?",
-      "answer": "Cinderella",
-      "acceptable": ["cinderella"]
+      "round": 4,
+      "question": "A three-dimensional shape that can be created through shadows, perspective, depth, and texture.",
+      "answer": "Form",
+      "acceptable": ["form"]
     },
     {
       "type": "identification",
-      "question": "What planet is closest to the Sun?",
-      "answer": "Mercury",
-      "acceptable": ["mercury"]
+      "round": 4,
+      "question": "The physical or visual surface quality of an object or artwork.",
+      "answer": "Texture",
+      "acceptable": ["texture"]
     },
     {
       "type": "identification",
-      "question": "How many continents are there on Earth?",
-      "answer": "7",
-      "acceptable": ["Seven", "seven"]
+      "round": 4,
+      "question": "The visual equilibrium among design elements.",
+      "answer": "Balance",
+      "acceptable": ["balance", "visual balance"]
+    },
+    {
+      "type": "identification",
+      "round": 4,
+      "question": "What people think about a person, company, product, or service.",
+      "answer": "Brand image",
+      "acceptable": ["brand image", "reputation"]
+    },
+    {
+      "type": "identification",
+      "round": 4,
+      "question": "The visual representation of a brand expressed through colors, typography, logos, images, and other visual choices.",
+      "answer": "Brand identity",
+      "acceptable": ["brand identity","brand"]
+    },
+    {
+      "type": "identification",
+      "round": 4,
+      "question": "The design element that connects two or more points and can be thick, thin, curved, or jagged.",
+      "answer": "Line",
+      "acceptable": ["line", "lines"]
     }
   ]
 }
